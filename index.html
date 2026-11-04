@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>After Dark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500;1,6..96,700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0} [hidden]{display:none!important} img{max-width:100%}
+.coderow code{font-size:14px!important;font-weight:600!important;font-family:var(--body)!important}
+
+/* Layout: compact sticky game header, one card stage, answers as chat bubbles inside the card, sticky bottom bar for Skip / Pause. Single deliberate late-night look. */
+:root{
+  --bg:#160a11; --bg2:#22101b; --card:#2d1424; --line:#4a2639;
+  --ink:#f7e8e3; --muted:#c4a3ad; --rose:#ff5b7a; --ember:#ffb08a; --ok:#7fd8b0;
+  --me:#5a1f39; --them:#3a1a2c;
+  --display:"Bodoni Moda","Didot",Georgia,serif;
+  --body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:radial-gradient(120% 70% at 50% -10%,#3a1328 0%,var(--bg) 60%) fixed,var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 96px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--display);font-style:italic;font-weight:700;font-size:clamp(40px,11vw,60px);line-height:.95;margin:0;letter-spacing:-.01em}
+h1 span,.brand span{color:var(--rose)}
+.sub{color:var(--muted);margin:6px 0 0;max-width:46ch}
+.panel{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:420px){.row{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:8px;min-width:0}
+label,.lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+input,select,textarea{width:100%;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit}
+textarea{min-height:92px;resize:vertical;line-height:1.45}
+textarea:disabled{opacity:.45}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+button{font:inherit;cursor:pointer;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px 16px;font-weight:600}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:linear-gradient(135deg,var(--rose),var(--ember));border:0;color:#200813;padding:13px 20px;font-size:16px}
+button.ghost{background:transparent}
+.note{font-size:13px;color:var(--muted);margin:0}
+.err{font-size:13px;color:var(--ember);margin:0}
+.rules{margin:0;padding-left:18px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:4px}
+.who{display:flex;flex-direction:column;gap:6px}
+.who div{display:flex;justify-content:space-between;gap:8px;padding:8px 12px;border-radius:10px;background:var(--card)}
+.who .on{color:var(--ok)}
+/* game header */
+.ghead{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:#160a11d9;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:8px 16px;margin:-8px -16px 0;border-radius:0 0 16px 16px;display:flex;flex-direction:column;gap:8px}
+.gtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.gtop .meta{font-size:13px}
+.brand{font-family:var(--display);font-style:italic;font-weight:700;font-size:20px}
+.heatname{font-family:var(--display);font-style:italic;font-size:20px;color:var(--ember)}
+.ladder{display:flex;gap:4px}
+.ladder i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.ladder i.lit{background:linear-gradient(90deg,var(--ember),var(--rose))}
+.ladder i.cap{opacity:.25}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* card */
+.card{background:linear-gradient(160deg,var(--card),#1d0c17);border:1px solid var(--line);border-radius:24px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 60px -30px #000}
+.card.flip{animation:flip .4s ease}
+@keyframes flip{from{transform:rotateY(60deg) scale(.97);opacity:.3}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.card.flip{animation:none}}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.kind{display:inline-flex;gap:8px;align-items:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 10px;border-radius:999px;background:#ff5b7a22;color:var(--rose)}
+.kind.alt{background:#ffb08a22;color:var(--ember)}
+.kind.plain{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.owner{font-size:13px;color:var(--muted)}
+.owner b{color:var(--ink)}
+.text{font-family:var(--display);font-size:clamp(21px,5.4vw,27px);line-height:1.25;margin:0;text-wrap:pretty}
+.text em{color:var(--rose);font-style:italic}
+.banner{font-size:14px;padding:10px 12px;border-radius:12px;background:#ffb08a1c;color:var(--ember)}
+.opts{display:grid;gap:8px}
+.opts button{text-align:left;border-radius:14px;font-weight:500;padding:11px 14px}
+.opts button.pick{border-color:var(--rose);background:#ff5b7a2b}
+.follow{font-size:17px;font-weight:600}
+.compose{display:flex;flex-direction:column;gap:8px}
+.timer{display:flex;align-items:center;gap:12px}
+.timer .t{font-variant-numeric:tabular-nums;font-size:28px;font-family:var(--display);color:var(--ember);min-width:3ch}
+.thread{display:flex;flex-direction:column;gap:8px}
+.msg{max-width:88%;padding:10px 13px;border-radius:16px;background:var(--them);white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.mine{align-self:flex-end;background:var(--me)}
+.msg small{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.msg .pickline{font-weight:700;color:var(--ember)}
+.fu{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px dashed #ffb08a66;border-radius:14px}
+.fu .kind{align-self:flex-start}
+.fu .follow{margin:0}
+.levelup{align-self:center;font-size:13px;letter-spacing:.06em;color:var(--ember);background:#ffb08a1a;border:1px solid #ffb08a40;padding:6px 14px;border-radius:999px;text-align:center}
+.fb{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.heat{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.heat button{font-size:22px;padding:8px 0;border-radius:12px}
+.reacts button.pick{border-color:var(--rose);background:#ff5b7a2b}
+.rxw{display:flex;gap:8px}.rxw input{flex:1;min-width:0}.rxw button{flex:none}
+.fblines{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}.fblines b{color:var(--ink)}.fblines i{color:var(--ink)}
+.heatsum{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:#ff5b7a14;font-size:14px}.big2{font-size:34px;line-height:1}
+.cd.word{font-size:52px;font-style:italic}
+.cd{font-family:var(--display);font-size:96px;line-height:1;text-align:center;color:var(--rose);font-variant-numeric:tabular-nums;padding-block:8px}
+.invite{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;border:1px dashed #ff5b7a66}
+.coderow{display:flex;gap:8px;align-items:center}.coderow code{flex:1;min-width:0;font-size:16px;font-weight:700;padding:10px 12px;border-radius:10px;background:var(--card);color:var(--ember);overflow-wrap:anywhere;user-select:all}
+details summary{cursor:pointer}
+.result{font-weight:700;font-size:17px;text-align:center}
+.result.hit{color:var(--ok)}.result.miss{color:var(--ember)}
+.wait{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.dots{display:inline-flex;gap:3px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--rose);animation:b 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,60%,100%{opacity:.25}30%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none;opacity:.7}}
+.reacts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.reacts button{padding:6px 12px;font-size:18px}
+.reacts span{font-size:13px;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:8px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:linear-gradient(transparent,var(--bg) 35%);padding:22px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.bar .in{max-width:560px;margin:0 auto;display:flex;gap:8px}
+.bar button{flex:1}
+.big{font-family:var(--display);font-style:italic;font-size:30px;margin:0;line-height:1.1;text-wrap:balance}
+.handoff{text-align:center;align-items:center;padding-block:40px}
+</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app"></div>
+<div class="bar" id="bar" hidden><div class="in" id="barin"></div></div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* ============================================================
+   PASTE YOUR FIREBASE SETTINGS HERE (Project settings > Your apps > Web app)
+   ============================================================ */
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBhBfWEY-yPfyjTQ8oQ7ooJJPH5ZkjEeps",
+  authDomain: "after-dark-game-8e5dc.firebaseapp.com",
+  databaseURL: "https://after-dark-game-8e5dc-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "after-dark-game-8e5dc",
+  appId: "1:126268316953:web:b1cc4ded1b8caa75ea3988"
+};
+</script>
+<script>
+
+/* ---------- Firebase sync (replaces the Claude room) ---------- */
+function makeRoom(){
+  const cfg=window.FIREBASE_CONFIG||{};
+  if(!window.firebase||!cfg.databaseURL||/PASTE/.test(cfg.databaseURL)) return null;
+  if(!firebase.apps.length) firebase.initializeApp(cfg);
+  const db=firebase.database(), myPeer="p"+Math.random().toString(36).slice(2,10);
+  return { join: async (name)=>{
+    const base=db.ref("rooms/"+name+"/peers"), me=base.child(myPeer);
+    let obj={}, list=[], hs=[], timer=null;
+    const write=()=>me.set({j:JSON.stringify(obj),t:firebase.database.ServerValue.TIMESTAMP});
+    await Promise.race([write(), new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),10000))]);
+    await me.onDisconnect().remove();
+    const conn=db.ref(".info/connected"), onConn=s=>{ if(s.val()===true){ me.onDisconnect().remove(); write().catch(()=>{}); } };
+    conn.on("value",onConn);
+    const onVal=snap=>{ const v=snap.val()||{};
+      list=Object.keys(v).map(k=>{ let pr={}; try{pr=JSON.parse(v[k].j||"{}")}catch(e){}
+        return Object.freeze({peer:k,presence:pr,sameTab:k===myPeer,isMe:k===myPeer,by:null,kind:"viewer",guest:false,updatedAt:v[k].t||0}); });
+      hs.forEach(h=>h({peers:list})); };
+    base.on("value",onVal);
+    return { name,
+      presence: async (patch)=>{ for(const k in patch){ if(patch[k]===null) delete obj[k]; else obj[k]=patch[k]; }
+        clearTimeout(timer); timer=setTimeout(()=>write().catch(()=>{}),50); },
+      peers: ()=>list,
+      onPeers: h=>{ hs.push(h); setTimeout(()=>h({peers:list}),0); return ()=>{ hs=hs.filter(x=>x!==h); }; },
+      leave: async ()=>{ base.off("value",onVal); conn.off("value",onConn); try{ await me.onDisconnect().cancel(); await me.remove(); }catch(e){} } };
+  }};
+}
+
+
+const LV=["Spark","Tease","Heat","Filthy","Edge"];
+const PER_LEVEL=10;
+/* Card fields: t type (q question, o confess, t finish-it, d dare, r roleplay, f fantasy, w wildcard)
+   x text, o options (f: [choice, follow-up]), g guess round (third person about {A}), m:"reply" back-and-forth,
+   w:"b" partner writes, s seconds (timed typing), n rounds each, fx wildcard effect.
+   Tokens: {A} card owner, {B} partner, {A's}/{B's}, {ap}/{bp} {ac}/{bc} {aw}/{bw} body words.
+   Each level is ordered mild -> strong; the game draws near the front of what's left, so heat builds within a level. */
+const __K="afterdark-2026";const __P="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";
+const __S=(()=>{const b=atob(__P),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i)^__K.charCodeAt(i%__K.length);return JSON.parse(new TextDecoder().decode(u));})();
+const D=__S.D, FIN=__S.FIN, WD=__S.WD, CB=__S.CB;
+const HEAT_E=["😊","🙂","😏","🔥","🥵"], RX=["🔥","😈","🥵","🤤","💦","🫦","😳","🙈","❤️"];
+const PER=l=>l===0?4:PER_LEVEL, LVN=l=>l===0?"Warm-up":LV[l-1];
+const strip=x=>String(x).replace(/<[^>]+>/g,"").replace(/[“”"]/g,"").trim();
+const KIND={q:"Question",o:"Tell me",t:"Finish the line",d:"Dare",r:"Roleplay",f:"Fantasy",w:"Twist",e:"Emoji only"};
+
+/* ---------- state ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let myId; try{myId=localStorage.getItem("ad-id")}catch(e){} if(!myId){myId="u"+Math.random().toString(36).slice(2,10);try{localStorage.setItem("ad-id",myId)}catch(e){}}
+let room=null, nr=null, mode="init";      // mode: init | net | local
+let G=null;                                // shared game state
+const P={};                                // playerId -> {me,a,vt,rx,ty}
+let mine={};                               // my presence (net)
+let drafts={}, rxDraft="", emojiErr=false, copied="";
+const okCode=x=>/^[a-z0-9][a-z0-9-]{2,39}$/.test(x||"");
+let invite=(()=>{try{const h=decodeURIComponent(location.hash.slice(1)).toLowerCase();return okCode(h)?h:""}catch(e){return ""}})();
+function newCode(){const a=["velvet","midnight","silk","honey","scarlet","secret","golden","wild","slow","sweet"],n=["moon","kiss","rose","flame","night","pillow","cherry","tiger","storm","lace"];
+  const r=x=>x[Math.floor(Math.random()*x.length)]; return r(a)+"-"+r(n)+"-"+Math.random().toString(36).slice(2,7);}
+function setHash(c){ try{ if(location.hash.slice(1)!==c) history.replaceState(null,"","#"+c); }catch(e){ try{location.hash=c}catch(_){}} }
+async function joinRoom(cd){
+  flash="";
+  if(!form.n){flash="Add your name first.";lastSig="";return render();}
+  if(!form.b){flash="Choose Girl or Boy.";lastSig="";return render();}
+  try{ nr=await room.join("ad-"+cd); }catch(e){ flash="Couldn't open that room. Check the room word, or play on one phone.";lastSig="";return render(); }
+  code=cd; invite=cd; joined=true; setHash(cd);
+  mine={me:{id:myId,n:form.n.slice(0,16),b:form.b,cap:+form.cap}}; P[myId]=Object.assign({},mine);
+  nr.onPeers(onPeers); nr.presence(mine).catch(()=>{}); lastSig=""; render();
+}
+function inviteURL(){ return location.origin+location.pathname+"#"+code; }
+function copyText(t,label){ const done=()=>{copied=label;lastSig="";render();setTimeout(()=>{copied="";lastSig="";render();},2500);};
+  try{ navigator.clipboard.writeText(t).then(done,()=>{fallbackSel(t);done();}); }catch(e){ fallbackSel(t); done(); } }
+function fallbackSel(t){ const el=$("#codebox"); if(el){ const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r);} }
+let joined=false, code="", lastSig="", draft="", sel=null, holder=null, flash="";
+let form={n:"",b:"",cap:"5",code:"",n2:"",b2:"f",cap2:"5"};
+try{const f=JSON.parse(localStorage.getItem("ad-form")||"null"); if(f)Object.assign(form,f)}catch(e){}
+const saveForm=()=>{try{localStorage.setItem("ad-form",JSON.stringify(form))}catch(e){}};
+
+function card(c){ if(c==="fin")return FIN; if(c==="cb")return {t:"o",x:G.cx||"",cb:1}; if(c.startsWith("wd:"))return WD[+c.slice(3)]; const [L,i]=c.split(":"); return D[L][+i]; }
+function pl(i){return G.pl[i]}
+function nameOf(id){const p=G&&G.pl.find(x=>x.id===id);return p?p.n:"?"}
+function other(id){return G.pl[0].id===id?G.pl[1].id:G.pl[0].id}
+function A(id){return P[id]&&P[id].a&&P[id].a.k===G.k?P[id].a:null}
+
+function tok(s,ow){const a=G.pl[ow],b=G.pl[1-ow];
+  const g=x=>x.b==="m"?"dick":"pussy",ch=x=>x.b==="m"?"chest":"tits",w=x=>x.b==="m"?"hard":"wet",po=n=>n+"'s";
+  return s.replace(/{A's}/g,esc(po(a.n))).replace(/{B's}/g,esc(po(b.n))).replace(/{A}/g,esc(a.n)).replace(/{B}/g,esc(b.n))
+   .replace(/{ap}/g,g(a)).replace(/{bp}/g,g(b)).replace(/{ac}/g,ch(a)).replace(/{bc}/g,ch(b)).replace(/{aw}/g,w(a)).replace(/{bw}/g,w(b));}
+
+/* ---------- shared-state plumbing ---------- */
+function better(x,y){ if(!y)return true; if(x.v!==y.v)return x.v>y.v; return String(x.by)>String(y.by); }
+function valid(g){ return g&&typeof g.v==="number"&&Array.isArray(g.pl)&&g.pl.length===2&&g.pl.some(p=>p.id===myId); }
+function commit(ch){
+  G=Object.assign({},G,ch,{v:(G?G.v:0)+1,by:myId});
+  if(mode==="net") setMine({g:G}); else render();
+}
+function setMine(patch){
+  Object.assign(mine,patch); P[myId]=Object.assign({},P[myId]||{},patch);
+  if(nr) nr.presence(patch).catch(()=>{});
+  render();
+}
+function setFor(id,patch){ if(mode==="net"){ if(id===myId) setMine(patch); return; } P[id]=Object.assign({},P[id]||{},patch); render(); }
+function onPeers(){
+  const seen={};
+  for(const p of nr.peers()){ const pr=p.presence||{}; const id=pr.me&&pr.me.id; if(!id)continue;
+    if(id===myId&&!p.sameTab)continue; seen[id]=1; P[id]=pr;
+    if(pr.g&&valid(pr.g)&&better(pr.g,G)){ G=pr.g; } }
+  P[myId]=Object.assign({},mine);
+  for(const id in P) if(!seen[id]&&id!==myId) delete P[id];
+  if(G&&(!mine.g||mine.g.v!==G.v||mine.g.by!==G.by)){ mine.g=G; nr.presence({g:G}).catch(()=>{}); }
+  render();
+}
+
+/* ---------- game rules ---------- */
+function draw(g,extra){
+  g=Object.assign({},g,extra||{});
+  const L=g.lvl, prevW=g.c&&g.c!=="fin"&&g.ph==="card"&&card(g.c).t==="w", note=(extra&&extra.note)||"";
+  const k0=(g.v||0)+1+"-"+Math.random().toString(36).slice(2,6);
+  const openMem=(g.mem||[]).map((m,i)=>[m,i]).filter(([m])=>!m[3]);
+  if(L>=2&&openMem.length&&g.c!=="cb"&&!prevW&&Math.random()<0.25){
+    const [m,mi]=openMem[Math.floor(Math.random()*openMem.length)], self=Math.random()<.5, src=card(m[1]);
+    const qx=strip(tok(src.x,m[0])), ans=strip(tok(src.t==="f"?src.o[m[2]][0]:src.o[m[2]],m[0]));
+    const list=self?CB.self:CB.other, cx=list[Math.floor(Math.random()*list.length)].replace("{q}",qx).replace("{ans}",ans);
+    const mem=g.mem.map((x,j)=>j===mi?[x[0],x[1],x[2],1]:x);
+    return Object.assign(g,{ph:"card",c:"cb",cx,k:k0,ow:self?m[0]:1-m[0],md:"solo",sec:0,ru:"",mem,note});
+  }
+  let used=(g.u&&g.u[L]?g.u[L].split(",").filter(Boolean).map(Number):[]);
+  let left=D[L].map((c,i)=>i).filter(i=>!used.includes(i)&&!(prevW&&D[L][i].t==="w"));
+  if(!left.length){used=[];left=D[L].map((c,i)=>i).filter(i=>!(prevW&&D[L][i].t==="w"));}
+  const win=left.slice(0,4), i=win[Math.floor(Math.random()*win.length)], c=D[L][i];
+  used.push(i);
+  const pend=Object.assign({},g.pend||{});
+  let ow=g.nt, md="solo", sec=c.s||0, ru="";
+  if(c.t!=="w"){
+    if(pend.swap){ow=1-g.nt;delete pend.swap;}
+    if(c.g) md="guess"; else if(c.t==="r"||c.t==="e"||c.m==="reply") md="reply";
+    if(pend.both&&md==="solo"&&c.w!=="b"){md="both";delete pend.both;}
+    if(pend.rule){ru=pend.rule;delete pend.rule;}
+    if(sec&&pend.dbl){sec*=2;delete pend.dbl;}
+  }
+  const k=k0;
+  return Object.assign(g,{ph:"card",c:L+":"+i,k,ow,md,sec,ru,pend,note,u:Object.assign({},g.u,{[L]:used.join(",")})});
+}
+function startGame(players,cap){
+  const base={v:G?G.v:0,ph:"card",pl:players,cap,lvl:0,n:0,mem:[],ht:[0,0],nt:Math.random()<.5?0:1,u:{},pend:{}};
+  commit(draw(base));
+}
+function nextCard(skipped){
+  const c=card(G.c), g=Object.assign({},G);
+  if(G.ph==="fin"){ const seq=(G.ws||"f").split(","), wi=(G.wi||0)+1; if(wi>=seq.length) return commit({ph:"end",k:G.k+"e"}); return commit(wdCard(seq[wi],wi)); }
+  if(!skipped&&G.lvl>=1&&(c.t==="q"||c.t==="f")&&G.md==="solo"&&!c.g){ const a=A(G.pl[G.ow].id); if(a&&a.o!=null) g.mem=(g.mem||[]).concat([[G.ow,G.c,a.o,0]]).slice(-10); }
+  if(c.t!=="w"){ const rts=G.pl.map(p=>P[p.id]&&P[p.id].rt&&P[p.id].rt.k===G.k?P[p.id].rt.v:0).filter(Boolean); const h=g.ht||[0,0]; g.ht=[h[0]+rts.reduce((x,y)=>x+y,0),h[1]+rts.length]; }
+  if(c.t==="w"&&!skipped){
+    const pend=Object.assign({},g.pend);
+    if(c.fx==="both")pend.both=1; if(c.fx==="swap")pend.swap=1; if(c.fx==="dbl")pend.dbl=1;
+    if(c.fx==="rule"){const a=A(G.pl[1-G.ow].id); if(a&&a.t&&a.t[0])pend.rule=a.t[0].slice(0,200);}
+    g.pend=pend; return commit(draw(g));
+  }
+  if(c.t!=="w"){ g.n=(g.n||0)+1; g.nt=1-g.nt; }
+  if(g.lvl===0&&g.n>=PER(0)){ return commit(draw(g,{lvl:1,n:0,ht:[0,0],note:"Warm-up done. Level 1 · Spark starts now."})); }
+  if(g.n>=PER(g.lvl)){ return commit(Object.assign(g,{ph:"check",k:"c"+g.v+Math.random().toString(36).slice(2,5)})); }
+  commit(draw(g));
+}
+function wdCard(s,wi){ return {ph:"fin",c:s==="f"?"fin":"wd:"+s,k:"f"+G.v+"-"+wi,md:"both",ow:G.nt||0,sec:0,ru:"",wi,note:""}; }
+function windDown(){ const idx=[0,1,2,3,4].sort(()=>Math.random()-.5).slice(0,2); commit(Object.assign({ws:idx.concat(["f"]).join(",")},wdCard(String(idx[0]),0))); }
+function finale(){ if(G.lvl>=4&&G.ph!=="climax") commit({ph:"climax",k:"x"+G.v+Math.random().toString(36).slice(2,5),cts:0}); else windDown(); }
+
+/* What input is needed right now, and from whom */
+function needs(){
+  if(!G)return{ids:[],secret:false};
+  if(G.ph==="check"||G.ph==="pause"||(G.ph==="climax"&&!G.cts)){ return {ids:G.pl.map(p=>p.id).filter(id=>!(P[id]&&P[id].vt&&P[id].vt.k===G.k)),secret:false,vote:true}; }
+  if(G.ph!=="card"&&G.ph!=="fin")return{ids:[],secret:false};
+  const c=card(G.c), own=G.pl[G.ow].id, oth=other(own), done=id=>{const a=A(id);return a&&a.d};
+  if(c.t==="w") return c.fx==="rule"&&!done(oth)?{ids:[oth],secret:false}:{ids:[],secret:false};
+  if(G.md==="solo"){const act=c.w==="b"?oth:own; return {ids:done(act)?[]:[act],secret:false};}
+  if(G.md==="both"||G.md==="guess"){ return {ids:[own,oth].filter(id=>!done(id)),secret:true}; }
+  if(G.md==="reply"){ const first=c.w==="b"?oth:own, sec=other(first), n=c.n||3;
+    const f=(A(first)&&A(first).t||[]).length, s=(A(sec)&&A(sec).t||[]).length;
+    if(f>=n&&s>=n)return{ids:[],secret:false};
+    return {ids:[f>s?sec:first],secret:false}; }
+  return{ids:[],secret:false};
+}
+function complete(){
+  if(!G||(G.ph!=="card"&&G.ph!=="fin"))return false;
+  const c=card(G.c);
+  if(c.t==="w"&&c.fx!=="rule")return true;
+  if(G.md==="reply"){const first=c.w==="b"?other(G.pl[G.ow].id):G.pl[G.ow].id,sec=other(first);
+    return ((A(first)&&A(first).t)||[]).length>=1&&((A(sec)&&A(sec).t)||[]).length>=1;}
+  if(needs().ids.length)return false;
+  if(c.t==="q"&&c.fu&&(G.md==="solo"||G.md==="guess")){const a=A(G.pl[G.ow].id); if(!(a&&(a.f||a.fp)))return false;}
+  return true;
+}
+/* Both votes in -> resolve (done by whichever device sees it first; ties settle on the shared version) */
+function autoResolve(){
+  if(!G||!["check","pause","climax"].includes(G.ph)||(G.ph==="climax"&&G.cts))return;
+  const vs=G.pl.map(p=>P[p.id]&&P[p.id].vt&&P[p.id].vt.k===G.k?P[p.id].vt.c:null);
+  if(vs.includes(null))return;
+  if(G.ph==="pause"){ commit({ph:G.pp.ph,k:G.pp.k}); return; }
+  if(G.ph==="climax"){ if(vs.includes("skip"))return windDown(); return commit({cts:Date.now()+2500}); }
+  if(vs.includes("end"))return finale();
+  let lvl=G.lvl; if(vs.includes("down"))lvl=Math.max(1,lvl-1); else if(vs.every(v=>v==="up"))lvl=Math.min(G.cap,lvl+1);
+  const note=lvl>G.lvl?`Level ${lvl} · ${LVN(lvl)}. Hotter from here.`:lvl<G.lvl?`Cooled down to ${LVN(lvl)}.`:`Staying at ${LVN(lvl)} for another round.`;
+  const g=Object.assign({},G,{lvl,n:0,ht:[0,0]}); commit(draw(g,{note}));
+}
+
+/* ---------- actions ---------- */
+function actor(){ // who this device is acting as
+  if(mode==="net")return myId;
+  return holder;
+}
+function submit(id,obj){ setFor(id,{a:Object.assign({k:G.k},obj),ty:null}); draft=""; sel=null; }
+function sendText(){
+  const id=actor(), c=card(G.c), t=($("#ans")&&$("#ans").value||"").trim();
+  const cur=A(id)||{};
+  if(G.md==="reply"){ if(!t)return;
+    if(c.t==="e"&&id===G.pl[G.ow].id&&/[\p{L}\p{N}]/u.test(t)){ emojiErr=true; lastSig=""; return; }
+    emojiErr=false; submit(id,{t:(cur.t||[]).concat([t.slice(0,280)])}); return; }
+  if(c.t==="q"){ if(sel===null)return; submit(id,{o:sel,t:t?[t.slice(0,300)]:[],d:1}); return; }
+  if(c.t==="f"){ if(sel===null||!t)return; submit(id,{o:sel,t:[t.slice(0,400)],d:1}); return; }
+  if(!t)return; submit(id,{t:[t.slice(0,400)],d:1});
+}
+function startTimer(){ const id=actor(); setFor(id,{a:{k:G.k,ts:Date.now()}}); }
+function vote(c){ const k=G.k; if(mode==="local"){ G.pl.forEach(p=>P[p.id]=Object.assign({},P[p.id],{vt:{k,c}})); render(); autoResolve(); } else setMine({vt:{k,c}}); }
+function pause(){ if(!G||G.ph==="pause")return; const k="p"+G.v; commit({ph:"pause",pp:{ph:G.ph,k:G.k},k}); }
+function coolDown(){ const l=Math.max(1,G.lvl-1); const g=Object.assign({},G,{lvl:l,n:0,ht:[0,0]}); commit(draw(g,{note:`Cooled down to ${LVN(l)}.`})); }
+
+/* ---------- rendering ---------- */
+function sig(){ const strip={}; for(const id in P){const p=P[id];strip[id]={me:p.me,a:p.a,vt:p.vt,rx:p.rx,rt:p.rt,ty:id===myId?null:p.ty};}
+  return JSON.stringify([mode,joined,G,strip,holder,flash,form.code,emojiErr,invite,copied]); }
+function render(){
+  const s=sig(); if(s===lastSig){ tick(); return; } lastSig=s;
+  const ta=$("#ans"), hadFocus=ta&&document.activeElement===ta; if(ta)draft=ta.value;
+  let flip=false;
+  if(G&&G.k!==lastK){ if(lastK)drafts[lastK]=draft; lastK=G.k; sel=null; draft=drafts[G.k]||""; rxDraft=""; emojiErr=false; flip=true; if(mode==="local")holder=null; }
+  const rw=$("#rxw"); if(rw)rxDraft=rw.value;
+  const app=$("#app");
+  if(mode==="init"){ app.innerHTML=`<p class="note">Loading…</p>`; return; }
+  if(!G||G.ph==="lobby") app.innerHTML=lobby(); else app.innerHTML=game();
+  bind();
+  if(flip){const cd=$("#card"); if(cd)cd.classList.add("flip");}
+  const nrw=$("#rxw"); if(nrw)nrw.value=rxDraft;
+  const nt=$("#ans"); if(nt){ nt.value=draft; if(hadFocus){nt.focus();nt.setSelectionRange(nt.value.length,nt.value.length);} }
+  tick();
+  if(mode==="net"&&G&&(G.ph==="check"||G.ph==="pause"||G.ph==="climax")) autoResolve();
+}
+function lobby(){
+  const head=`<header><h1>After <span>Dark</span></h1></header>`;
+  const err=flash?`<p class="err">${esc(flash)}</p>`:"";
+  const me=`<div class="col"><label for="fn">Your name</label><input id="fn" maxlength="16" value="${esc(form.n)}">
+   <label for="fb">You are a</label><select id="fb"><option value="" disabled ${form.b?"":"selected"}>Choose…</option><option value="m" ${form.b==="m"?"selected":""}>Boy</option><option value="f" ${form.b==="f"?"selected":""}>Girl</option></select>
+   <label for="fc">Max heat</label><select id="fc">${LV.map((h,i)=>`<option value="${i+1}" ${+form.cap===i+1?"selected":""}>${i+1} · ${h}</option>`).join("")}</select></div>`;
+  if(mode==="local"){
+    return head+`<div class="panel"><div class="row">${me}
+      <div class="col"><label for="fn2">Partner's name</label><input id="fn2" maxlength="16" value="${esc(form.n2)}">
+      <label for="fb2">Partner is a</label><select id="fb2"><option value="m" ${form.b2==="m"?"selected":""}>Boy</option><option value="f" ${form.b2==="f"?"selected":""}>Girl</option></select>
+      <label for="fc2">Partner's max heat</label><select id="fc2">${LV.map((h,i)=>`<option value="${i+1}" ${+form.cap2===i+1?"selected":""}>${i+1} · ${h}</option>`).join("")}</select></div></div>
+      ${err}<button class="primary" id="lstart">Start</button></div>`;
+  }
+  if(!joined){
+    if(invite) return head+`<div class="panel"><p class="big" style="font-size:24px">Join room <span style="color:var(--rose)">${esc(invite)}</span></p>${me}${err}
+      <button class="primary" id="joininv">Join</button></div>`;
+    return head+`<div class="panel">${me}${err}
+      <button class="primary" id="create">Create a room</button>
+      <details><summary class="note">Join with a room word</summary><div class="stack" style="margin-top:8px">
+      <input id="fr" maxlength="40" value="${esc(form.code)}" placeholder="silk-rose-42"><button id="join">Join</button></div></details></div>`;
+  }
+  const ids=Object.keys(P).filter(id=>P[id]&&P[id].me);
+  const list=ids.map(id=>`<div><span>${esc(P[id].me.n)}${id===myId?" (you)":""}</span><span class="on">here</span></div>`).join("");
+  const ready=ids.length>=2;
+  return head+`<div class="panel"><div class="who">${list}</div>
+    ${ready?`<button class="primary" id="nstart">Start</button>`:`
+      <span class="lbl">Send your partner this link</span>
+      <div class="coderow"><code id="codebox">${esc(inviteURL())}</code></div>
+      <div class="row"><button class="primary" id="sharelink">Share link</button><button id="copylink">${copied==="link"?"Copied":"Copy link"}</button></div>
+      <div class="wait"><span class="dots"><i></i><i></i><i></i></span>Waiting for your partner…</div>`}</div>`;
+}
+function header(){
+  return `<div class="ghead"><div class="gtop"><span class="heatname">${G.ph==="fin"?"Winding down":G.lvl?`${G.lvl} · ${LVN(G.lvl)}`:"Warm-up"}</span><span class="meta">${G.ph==="card"&&card(G.c).t!=="w"?`${Math.min((G.n||0)+1,PER(G.lvl))} / ${PER(G.lvl)}`:""}</span></div>
+   <div class="ladder">${LV.map((h,i)=>`<i class="${i<G.lvl?"lit":""} ${i>=G.cap?"cap":""}" title="${h}"></i>`).join("")}</div></div>`;
+}
+function game(){
+  let body="";
+  const nd=needs();
+  if(G.ph==="pause") body=pauseView(nd);
+  else if(G.ph==="check") body=checkView(nd);
+  else if(G.ph==="end") body=endView();
+  else if(G.ph==="climax") body=climaxView(nd);
+  else body=cardView(nd);
+  return header()+body;
+}
+function waitLine(id,txt){ const ty=P[id]&&P[id].ty===G.k; return `<div class="wait"><span class="dots"><i></i><i></i><i></i></span>${esc(nameOf(id))} ${ty?"is typing…":txt||"is answering…"}</div>`; }
+function bubble(id,lines,extra){
+  const isMine=mode==="net"?id===myId:false;
+  return `<div class="msg ${isMine?"mine":""}"><small>${esc(nameOf(id))}</small>${extra||""}${lines.map(esc).join("<br>")}</div>`;
+}
+function cardView(nd){
+  const c=card(G.c), ow=G.ow, own=G.pl[ow].id, oth=other(own);
+  // local: hand-off screen when a secret answer must come from someone else
+  if(mode==="local"&&nd.ids.length){ const want=nd.ids[0]; if(holder!==want){
+      if(!nd.secret){ holder=want; } else return `<article class="card handoff"><p class="big">Pass the phone to ${esc(nameOf(want))}</p><p class="note">${esc(nameOf(other(want)))}, don't peek.</p><button class="primary" id="take">I'm ${esc(nameOf(want))}</button></article>`; } }
+  if(mode==="local"&&!nd.ids.length&&(holder===null||(c.fu&&c.t==="q"))) holder=own;
+  const me=actor();
+  const kind=G.ph==="fin"?(G.c==="fin"?"Last card":"Winding down"):c.cb?"Remember this?":KIND[c.t];
+  const tags=G.md==="guess"?`<span class="kind alt">Guess round</span>`:G.md==="both"&&G.ph!=="fin"?`<span class="kind alt">You both answer</span>`:`<span class="kind ${c.t==="w"?"alt":""}">${kind}</span>`;
+  const ownerLine=G.ph==="fin"?`<span class="owner">For both of you</span>`:c.t==="w"?"":G.md==="guess"?`<span class="owner"><b>${esc(nameOf(own))}</b> answers, <b>${esc(nameOf(oth))}</b> guesses</span>`:
+    `<span class="owner">${(mode==="net"&&own===myId)?"Your card":`<b>${esc(nameOf(own))}</b>'s card`}${c.w==="b"&&G.md==="solo"?` · ${esc(nameOf(oth))} writes`:""}</span>`;
+  let h=(G.note?`<div class="levelup">${esc(G.note)}</div>`:"")+`<article class="card" id="card"><div class="tags">${tags}</div>${ownerLine}`;
+  if(G.ru) h+=`<div class="banner"><b>${esc(nameOf(oth))}'s rule:</b> ${esc(G.ru)}</div>`;
+  h+=`<p class="text">${tok(c.x,ow)}</p>`;
+  const opts=c.t==="q"?c.o:c.t==="f"?c.o.map(x=>x[0]):null;
+  const optLabel=i=>tok(opts[i],ow);
+  const iNeed=nd.ids.includes(me);
+  // ----- reveal area
+  let rev="";
+  if(c.t==="w"){
+    if(c.fx==="rule"){ const a=A(oth); if(a&&a.d) rev=bubble(oth,a.t||[]); else if(!iNeed) rev=waitLine(oth,"is writing the rule…"); }
+  } else if(G.md==="solo"){
+    const act=c.w==="b"?oth:own, a=A(act);
+    if(a&&a.d) rev=bubble(act,a.t||[],a.o!=null?`<div class="pickline">${optLabel(a.o)}</div>`:"")+(c.t==="f"&&a.o!=null?"":"");
+    else if(!iNeed) rev=waitLine(act);
+  } else if(G.md==="both"){
+    const ids=[own,oth], all=ids.every(id=>A(id)&&A(id).d);
+    if(all) rev=ids.map(id=>{const a=A(id);return bubble(id,a.t||[],a.o!=null&&opts?`<div class="pickline">${optLabel(a.o)}</div>`:"")}).join("");
+    else rev=ids.filter(id=>A(id)&&A(id).d).map(id=>`<p class="note">${esc(nameOf(id))} has sent. Hidden until you've both answered.</p>`).join("")+ids.filter(id=>!(A(id)&&A(id).d)&&!(id===me&&iNeed)).map(id=>waitLine(id)).join("");
+  } else if(G.md==="guess"){
+    const a=A(own), b=A(oth);
+    if(a&&a.d&&b&&b.d){ const hit=a.o===b.o;
+      rev=bubble(own,[],`<div class="pickline">${optLabel(a.o)}</div>`)+bubble(oth,[],`<small>guessed</small><div class="pickline">${optLabel(b.o)}</div>`)+
+        `<p class="result ${hit?"hit":"miss"}">${hit?`${esc(nameOf(oth))} read ${esc(nameOf(own))} perfectly.`:`Not quite, ${esc(nameOf(oth))}.`}</p>`;
+      if(a.x) rev+=bubble(own,[a.x]);
+      else if(!hit&&!c.fu&&(mode==="local"||me===own)) rev+=`<div class="compose"><span class="lbl">${esc(nameOf(own))}, tell ${esc(nameOf(oth))} why you picked it (optional)</span><textarea id="ans" maxlength="300" placeholder="Because…"></textarea><button id="whysend">Send</button></div>`;
+      else if(!hit&&!c.fu) rev+=waitLine(own,"can add a reason…"); }
+    else rev=[own,oth].filter(id=>A(id)&&A(id).d).map(id=>`<p class="note">${esc(nameOf(id))} has locked in.</p>`).join("")+[own,oth].filter(id=>!(A(id)&&A(id).d)&&!(id===me&&iNeed)).map(id=>waitLine(id,id===own?"is choosing…":"is guessing…")).join("");
+  } else if(G.md==="reply"){
+    const first=c.w==="b"?oth:own, sec=other(first), f=(A(first)&&A(first).t)||[], s=(A(sec)&&A(sec).t)||[];
+    const th=[]; for(let i=0;i<Math.max(f.length,s.length);i++){ if(f[i])th.push(bubble(first,[f[i]])); if(s[i])th.push(bubble(sec,[s[i]])); }
+    rev=th.join(""); if(nd.ids.length&&!iNeed) rev+=waitLine(nd.ids[0],"is writing…");
+  }
+  if(c.t==="q"&&c.fu&&(G.md==="solo"||G.md==="guess")){
+    const a=A(own), ready=a&&a.d&&(G.md==="solo"||(A(oth)&&A(oth).d));
+    if(ready){ const q=Array.isArray(c.fu)?c.fu[a.o]:c.fu;
+      rev+=`<div class="fu"><span class="kind alt">🔥 Follow-up for ${esc(nameOf(own))}</span><p class="follow">${tok(q,ow)}</p></div>`;
+      if(a.f) rev+=bubble(own,[a.f]);
+      else if(a.fp) rev+=`<p class="note">${esc(nameOf(own))} passed on the follow-up.</p>`;
+      else if(mode==="local"||me===own) rev+=`<div class="compose"><textarea id="ans" maxlength="400" placeholder="Type your reply…"></textarea><div class="row"><button class="primary" id="fusend">Send</button><button class="ghost" id="fupass">Pass on this one</button></div></div>`;
+      else rev+=waitLine(own,"is answering the follow-up…"); } }
+  if(rev) h+=`<div class="thread">${rev}</div>`;
+  // ----- input area
+  if(iNeed){
+    const timed=G.sec&&G.md!=="reply"&&c.t!=="q"&&c.t!=="f";
+    const my=A(me)||{};
+    const label=mode==="local"?`<span class="lbl">${esc(nameOf(me))}, your answer</span>`:"";
+    let inp=`<div class="compose">${label}`;
+    if(opts){ inp+=`<div class="opts">${opts.map((o,i)=>`<button data-o="${i}" class="${sel===i?"pick":""}">${tok(o,ow)}</button>`).join("")}</div>`; }
+    if(c.t==="f"&&sel!==null) inp+=`<div class="follow">${tok(c.o[sel][1],ow)}</div>`;
+    const isGuesser=G.md==="guess"&&me===oth;
+    if(G.md==="guess"){ inp+=`<button class="primary" id="send" ${sel===null?"disabled":""}>${isGuesser?"Lock in my guess":"Lock in my answer"}</button>`; }
+    else if(timed){
+      if(!my.ts) inp+=`<button class="primary" id="tstart">Start ${G.sec}s and type</button><p class="note">When the timer ends, whatever you've typed sends itself.</p>`;
+      else inp+=`<div class="timer"><span class="t" data-ts="${my.ts}" data-sec="${G.sec}" data-mine="1">${G.sec}</span><span class="note">Keep typing…</span></div><textarea id="ans" maxlength="400" placeholder="Type fast…"></textarea>`;
+    } else {
+      const firstE=c.t==="e"&&me===G.pl[G.ow].id;
+      const ph=c.t==="q"?"Add a line (optional)":c.t==="w"?"Type the rule…":c.t==="e"?(firstE?"Emojis only… 😏🍑🔥":"Translate it into words…"):G.md==="reply"?"Your message…":"Type your answer…";
+      if(c.t==="e") inp+=`<span class="lbl">${firstE?"Your emojis":`Translate ${esc(nameOf(G.pl[G.ow].id))}'s emojis`}</span>`;
+      if(emojiErr&&firstE) inp+=`<p class="err">Emojis only on this one. No letters or numbers.</p>`;
+      if((c.t!=="f"||sel!==null)&&!(c.t==="q"&&c.fu)) inp+=`<textarea id="ans" maxlength="${G.md==="reply"?280:400}" placeholder="${ph}"></textarea>`;
+      inp+=`<button class="primary" id="send">${G.md==="both"?"Send (hidden till you both answer)":"Send"}</button>`;
+    }
+    h+=inp+`</div>`;
+  }
+  // ----- reactions + next
+  if(complete()){
+    if(c.t!=="w") h+=feedback(c,own,oth);
+    h+=`<button class="primary" id="next">${G.ph==="fin"?(G.c==="fin"?"Close the night":"Next"):c.t==="w"?"Got it, next card":"Next card"}</button>`;
+  }
+  return h+`</article>`;
+}
+function feedback(c,own,oth){
+  const both=G.md==="both"||G.ph==="fin", raters=both?[own,oth]:[c.w==="b"&&G.md==="solo"?own:oth];
+  const lines=G.pl.map(p=>{const x=P[p.id]||{}, r=x.rt&&x.rt.k===G.k?x.rt.v:0, e=x.rx&&x.rx.k===G.k?x.rx:null;
+    if(!r&&!e)return""; return `<div class="fbline"><b>${esc(p.n)}</b>${r?` rated it ${HEAT_E[r-1]}`:""}${e&&(e.e||e.w)?`${r?" ·":""} ${esc(e.e||"")} ${e.w?`<i>“${esc(e.w)}”</i>`:""}`:""}</div>`}).join("");
+  const rater=mode==="net"?(raters.includes(myId)&&!(P[myId]&&P[myId].rt&&P[myId].rt.k===G.k)?myId:null):raters.find(id=>!(P[id]&&P[id].rt&&P[id].rt.k===G.k))||null;
+  const reactor=mode==="net"?myId:(both?(holder||own):oth);
+  const myRx=P[reactor]&&P[reactor].rx&&P[reactor].rx.k===G.k?P[reactor].rx.e:null;
+  let h=`<div class="fb">`;
+  if(rater) h+=`<span class="lbl">${mode==="local"?esc(nameOf(rater))+", r":"R"}ate it</span><div class="heat">${HEAT_E.map((e,i)=>`<button data-rt="${i+1}" data-who="${rater}" aria-label="Heat ${i+1} of 5">${e}</button>`).join("")}</div>`;
+  h+=`<div class="reacts">${RX.map(e=>`<button data-rx="${e}" data-who="${reactor}" class="${myRx===e?"pick":""}" aria-label="React ${e}">${e}</button>`).join("")}</div>
+   <div class="rxw"><input id="rxw" maxlength="40" placeholder="Add a few words"><button id="rxsend" data-who="${reactor}">Send</button></div>`;
+  return h+(lines?`<div class="fblines">${lines}</div>`:"")+`</div>`;
+}
+function heatSummary(){ const h=G.ht||[0,0]; if(!h[1])return""; const avg=h[0]/h[1], e=HEAT_E[Math.min(4,Math.max(0,Math.round(avg)-1))];
+  return `<div class="heatsum"><span class="big2">${e}</span><span>This level: <b>${avg.toFixed(1)}</b> / 5</span></div>`; }
+function climaxView(nd){
+  let h=`<article class="card" id="card"><span class="kind alt" style="align-self:flex-start">The countdown 💦</span><p class="big">Finish together</p>`;
+  if(!G.cts){
+    const myV=mode==="net"&&P[myId]&&P[myId].vt&&P[myId].vt.k===G.k?P[myId].vt.c:null;
+    h+=`<p class="note">Tap when you're close. On zero, let go together.</p>`;
+    if(myV) h+=`<p class="note">You're close.</p>`+(nd.ids.length?waitLine(other(myId),"isn't there yet…"):"");
+    else h+=`<div class="stack"><button class="primary" data-v="close">${mode==="local"?"We're both close":"I'm close"}</button><button class="ghost" data-v="skip">Skip</button></div>`;
+  } else h+=`<div class="cd" data-cd="${G.cts}">10</div><p class="note" id="cdn">Breathe. Not yet…</p><button class="primary" id="wdgo" hidden>We're done 💦</button>`;
+  return h+`</article>`;
+}
+function checkView(nd){
+  const atCap=G.lvl>=G.cap, me=actor()||myId;
+  const myV=mode==="net"&&P[myId]&&P[myId].vt&&P[myId].vt.k===G.k?P[myId].vt.c:null;
+  const lab={up:"Hotter",stay:"Stay here",down:"Cooler",end:"End the night"};
+  let h=`<article class="card"><p class="big">${atCap?"You're at your limit":"Turn up the heat?"}</p>
+   ${heatSummary()}<p class="note">${atCap?"This is the hottest level you both chose.":`Next: <b>${LV[G.lvl]}</b>. Only if you both pick Hotter.`}</p>`;
+  if(myV) h+=`<p class="note">You picked <b>${lab[myV]}</b>.</p>`+(nd.ids.length?waitLine(other(myId),"is choosing…"):"");
+  else h+=`<div class="stack">${atCap?"":`<button class="primary" data-v="up">Hotter</button>`}<button data-v="stay">Stay at ${LV[G.lvl-1]}</button>${G.lvl>1?`<button class="ghost" data-v="down">Cooler</button>`:""}<button class="ghost" data-v="end">End the night</button></div>`;
+  return h+`</article>`;
+}
+function pauseView(nd){
+  const myV=mode==="net"&&P[myId]&&P[myId].vt&&P[myId].vt.k===G.k;
+  let h=`<article class="card"><p class="big">Paused</p>`;
+  if(myV) h+=`<p class="note">You're ready.</p>`+(nd.ids.length?waitLine(other(myId),"isn't ready yet"):"");
+  else h+=`<div class="stack"><button class="primary" data-v="go">${mode==="local"?"We're both ready":"I'm ready"}</button></div>`;
+  h+=`<div class="stack"><button class="ghost" id="cool" ${G.lvl<=1?"disabled":""}>Resume one level cooler</button><button class="ghost" id="end">End the night</button><button class="ghost" id="newg2">New game</button></div>`;
+  return h+`</article>`;
+}
+function endView(){
+  return `<article class="card"><p class="big">Good night, ${esc(G.pl[0].n)} &amp; ${esc(G.pl[1].n)}</p>
+   <button class="primary" id="again">Play again</button></article>`;
+}
+function bar(){
+  const b=$("#bar"); const on=G&&G.ph!=="lobby"&&G.ph!=="end";
+  b.hidden=!on; if(!on)return;
+  const canSkip=G.ph==="card"||G.ph==="fin"||(G.ph==="climax");
+  $("#barin").innerHTML=`${canSkip?`<button class="ghost" id="skip">Skip</button>`:""}<button class="ghost" id="pause" ${G.ph==="pause"?"disabled":""}>Pause</button>`;
+  const on2=(id,f)=>{const e=$(id);if(e)e.onclick=f;};
+  on2("#skip",()=>{holder=null; if(G.ph==="climax")windDown(); else nextCard(true)}); on2("#pause",pause);
+  on2("#newg2",()=>{ if(confirmNew){confirmNew=false;commit({ph:"lobby"});} else {confirmNew=true;$("#newg2").textContent="Tap again to restart";setTimeout(()=>{confirmNew=false;const e=$("#newg2");if(e)e.textContent="New game"},3000);} });
+}
+let confirmNew=false;
+function bind(){
+  const on=(id,f)=>{const e=$(id);if(e)e.onclick=f;};
+  const rd=()=>{form.n=($("#fn")||{}).value?.trim()??form.n;form.b=($("#fb")||{}).value||form.b;form.cap=($("#fc")||{}).value||form.cap;
+    if($("#fr"))form.code=$("#fr").value.trim(); if($("#fn2"))form.n2=$("#fn2").value.trim(); if($("#fb2"))form.b2=$("#fb2").value; if($("#fc2"))form.cap2=$("#fc2").value; saveForm();};
+  document.querySelectorAll("#app input,#app select").forEach(e=>e.onchange=rd);
+  on("#join",()=>{ rd(); const cd=form.code.toLowerCase().trim().replace(/[^a-z0-9-]+/g,"-").replace(/^-+|-+$/g,"").slice(0,40);
+    if(!okCode(cd)){flash="Type the room word your partner sent you.";lastSig="";return render();} joinRoom(cd); });
+  on("#create",()=>{ rd(); if(!form.n){flash="Add your name first.";lastSig="";return render();} if(!form.b){flash="Choose Girl or Boy.";lastSig="";return render();} joinRoom(newCode()); });
+  on("#joininv",()=>{ rd(); joinRoom(invite); });
+  on("#notinv",()=>{ invite=""; setHash(""); try{history.replaceState(null,"",location.pathname+location.search)}catch(e){} flash=""; lastSig=""; render(); });
+  on("#copylink",()=>copyText(inviteURL(),"link"));
+  on("#sharelink",()=>{ const url=inviteURL(); if(navigator.share){ navigator.share({title:"After Dark",text:"Join me 😏",url}).catch(()=>{}); } else copyText(url,"link"); });
+  on("#copymsg",()=>copyText(`Come play After Dark with me 😏 Open the game link and join room: ${code}`,"msg"));
+  on("#tolocal",()=>{mode="local";flash="";G=null;lastSig="";render();});
+  on("#tonet",()=>{mode="net";flash="";G=null;lastSig="";render();});
+  on("#leave",async()=>{ try{await nr.leave()}catch(e){} nr=null;joined=false;G=null;invite="";for(const k in P)delete P[k];mine={};lastSig="";render(); });
+  on("#nstart",()=>{ const ids=Object.keys(P).filter(id=>P[id]&&P[id].me).sort().slice(0,2); if(!ids.includes(myId)){ids[1]=myId;ids.sort();}
+    const pls=ids.map(id=>({id,n:P[id].me.n,b:P[id].me.b})); const cap=Math.min(...ids.map(id=>+P[id].me.cap||5));
+    startGame(pls,cap); });
+  on("#lstart",()=>{ rd(); if(!form.n||!form.n2||!form.b){flash="Add both names and choose Girl or Boy.";lastSig="";return render();}
+    for(const k in P)delete P[k]; holder=null; G=null;
+    startGame([{id:"p0",n:form.n.slice(0,16),b:form.b},{id:"p1",n:form.n2.slice(0,16),b:form.b2}],Math.min(+form.cap,+form.cap2)); });
+  on("#take",()=>{ holder=needs().ids[0]; lastSig=""; render(); });
+  document.querySelectorAll("#app .opts button").forEach(b=>b.onclick=()=>{ const t=$("#ans"); if(t)draft=t.value; sel=+b.dataset.o; lastSig=""; render(); });
+  on("#send",()=>{ sendText(); if(mode==="local"){ const nd=needs(); if(!nd.secret&&nd.ids.length)holder=nd.ids[0]; } lastSig=""; render(); });
+  on("#tstart",startTimer);
+  on("#fusend",()=>{ const t=($("#ans")&&$("#ans").value||"").trim(); if(!t)return; const own=G.pl[G.ow].id; setFor(own,{a:Object.assign({},A(own),{f:t.slice(0,400)}),ty:null}); draft=""; lastSig=""; render(); });
+  on("#fupass",()=>{ const own=G.pl[G.ow].id; setFor(own,{a:Object.assign({},A(own),{fp:1}),ty:null}); draft=""; lastSig=""; render(); });
+  on("#whysend",()=>{ const t=($("#ans")&&$("#ans").value||"").trim(); if(!t)return; const own=G.pl[G.ow].id; setFor(own,{a:Object.assign({},A(own),{x:t.slice(0,300)}),ty:null}); draft=""; lastSig=""; render(); });
+  const ta=$("#ans"); if(ta){ ta.oninput=()=>{ draft=ta.value; if(mode==="net"){ const want=ta.value?G.k:null; if((mine.ty||null)!==want){ mine.ty=want; nr&&nr.presence({ty:want}).catch(()=>{}); } } }; }
+  document.querySelectorAll("#app [data-rx]").forEach(b=>b.onclick=()=>{ const id=b.dataset.who, cur=P[id]&&P[id].rx&&P[id].rx.k===G.k?P[id].rx:{}; setFor(id,{rx:{k:G.k,e:b.dataset.rx,w:cur.w||""}}); });
+  document.querySelectorAll("#app [data-rt]").forEach(b=>b.onclick=()=>setFor(b.dataset.who,{rt:{k:G.k,v:+b.dataset.rt}}));
+  on("#rxsend",()=>{ const w=($("#rxw").value||"").trim(); if(!w)return; const id=$("#rxsend").dataset.who, cur=P[id]&&P[id].rx&&P[id].rx.k===G.k?P[id].rx:{}; rxDraft=""; setFor(id,{rx:{k:G.k,e:cur.e||"",w:w.slice(0,40)}}); });
+  on("#wdgo",()=>windDown());
+  on("#next",()=>{ holder=null; nextCard(false); });
+  document.querySelectorAll("#app [data-v]").forEach(b=>b.onclick=()=>{ vote(b.dataset.v); });
+  on("#cool",()=>{ holder=null; coolDown(); }); on("#end",()=>finale());
+  on("#again",()=>{ if(mode==="local"){G=null;lastSig="";render();} else commit({ph:"lobby"}); });
+  bar();
+}
+let lastK=null;
+function tick(){
+  document.querySelectorAll("[data-ts]").forEach(el=>{
+    const left=Math.max(0,Math.ceil((+el.dataset.ts+ +el.dataset.sec*1000-Date.now())/1000));
+    el.textContent=left;
+    if(left<=0&&el.dataset.mine&&!el.dataset.fired){ el.dataset.fired="1"; const t=($("#ans")&&$("#ans").value.trim())||"(ran out of time)";
+      const id=actor(); setFor(id,{a:{k:G.k,ts:+el.dataset.ts,t:[t.slice(0,400)],d:1},ty:null}); draft=""; }
+  });
+}
+setInterval(tick,250);
+function tickCd(){ document.querySelectorAll("[data-cd]").forEach(el=>{ const st=+el.dataset.cd, now=Date.now();
+  if(now<st){el.textContent="Get ready…";el.classList.add("word");return;} const left=10-Math.floor((now-st)/1000);
+  if(left>0){el.textContent=left;el.classList.remove("word"); const n=$("#cdn"); if(n)n.textContent=left>3?"Breathe. Not yet…":"Almost… hold it…";}
+  else{el.textContent="Now 💦";el.classList.add("word"); const n=$("#cdn"); if(n)n.textContent="Let go. Together."; const b=$("#wdgo"); if(b)b.hidden=false;} }); }
+setInterval(tickCd,200);
+
+(async()=>{
+  render();
+  try{ room=makeRoom(); }catch(e){ room=null; }
+  mode=room?"net":"local"; if(!room) flash="Sync isn't set up yet, so this is one-phone mode. Add your Firebase settings to the file."; render();
+  if(room&&invite&&form.n&&form.b) joinRoom(invite);
+})();
+window.addEventListener("hashchange",()=>{ if(joined)return; try{const h=decodeURIComponent(location.hash.slice(1)).toLowerCase(); if(okCode(h)&&h!==invite){invite=h;lastSig="";render(); if(room&&form.n&&form.b)joinRoom(h);} }catch(e){} });
+
+</script>
+</body>
+</html>

@@ -12,7 +12,7 @@ html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset
 body{margin:0} [hidden]{display:none!important} img{max-width:100%}
 .coderow code{font-size:14px!important;font-weight:600!important;font-family:var(--body)!important}
 
-/* Layout: compact sticky game header, one card stage, answers as chat bubbles inside the card, sticky bottom bar for Skip / Pause. Single deliberate late-night look. */
+/* Layout: compact sticky game header with a ⋯ menu, one card stage that turns into a chat once both have answered. Single deliberate late-night look. */
 :root{
   --bg:#160a11; --bg2:#22101b; --card:#2d1424; --line:#4a2639;
   --ink:#fbefea; --muted:#dcc0c8; --rose:#ff5b7a; --ember:#ffb08a; --ok:#7fd8b0;
@@ -27,7 +27,7 @@ body{background:radial-gradient(120% 70% at 50% -10%,var(--glowc) 0%,var(--bg) 6
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 h1{font-family:var(--display);font-style:italic;font-weight:700;font-size:clamp(40px,11vw,60px);line-height:.95;margin:0;letter-spacing:-.01em}
-h1 span,.brand span{color:var(--rose)}
+h1 span{color:var(--rose)}
 .sub{color:var(--muted);margin:6px 0 0;max-width:46ch}
 .panel{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -51,7 +51,7 @@ button.ghost{background:transparent}
 /* game header */
 .ghead{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:#160a11d9;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);padding:8px 16px;margin:-8px -16px 0;border-radius:0 0 16px 16px;display:flex;flex-direction:column;gap:8px}
 .gtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.gtop .meta{font-size:13px}
-.brand{font-family:var(--display);font-style:italic;font-weight:700;font-size:20px}
+
 .heatname{font-family:var(--display);font-style:italic;font-size:20px;color:var(--ember)}
 .ladder{display:flex;gap:4px}
 .ladder i{flex:1;height:6px;border-radius:3px;background:var(--line)}
@@ -60,9 +60,6 @@ button.ghost{background:transparent}
 .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 /* card */
 .card{background:linear-gradient(160deg,var(--card),#1d0c17);border:1px solid var(--line);border-radius:24px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 60px -30px #000}
-.card.flip{animation:flip .4s ease}
-@keyframes flip{from{transform:rotateY(60deg) scale(.97);opacity:.3}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion:reduce){.card.flip{animation:none}}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .kind{display:inline-flex;gap:8px;align-items:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 10px;border-radius:999px;background:#ff5b7a22;color:var(--rose)}
 .kind.alt{background:#ffb08a22;color:var(--ember)}
@@ -89,50 +86,31 @@ button.ghost{background:transparent}
 .fu .follow{margin:0}
 .levelup{align-self:center;font-size:13px;letter-spacing:.06em;color:var(--ember);background:#ffb08a1a;border:1px solid #ffb08a40;padding:6px 14px;border-radius:999px;text-align:center}
 .fb{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
-.heat{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.heat button{font-size:22px;padding:8px 0;border-radius:12px}
 .reacts button.pick{border-color:var(--rose);background:#ff5b7a2b}
-.rxw{display:flex;gap:8px}.rxw input{flex:1;min-width:0}.rxw button{flex:none}
-.fblines{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}.fblines b{color:var(--ink)}.fblines i{color:var(--ink)}
-.heatsum{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:#ff5b7a14;font-size:14px}.big2{font-size:34px;line-height:1}
+
+
+.heatsum{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:#ff5b7a14;font-size:14px}
 .cd.word{font-size:52px;font-style:italic}
 .cd{font-family:var(--display);font-size:96px;line-height:1;text-align:center;color:var(--rose);font-variant-numeric:tabular-nums;padding-block:8px}
 .invite{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;border:1px dashed #ff5b7a66}
 .coderow{display:flex;gap:8px;align-items:center}.coderow code{flex:1;min-width:0;font-size:16px;font-weight:700;padding:10px 12px;border-radius:10px;background:var(--card);color:var(--ember);overflow-wrap:anywhere;user-select:all}
 details summary{cursor:pointer}
-.thermo{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
-.thermo button{border-radius:8px;padding:10px 2px;font-size:12px;font-weight:600;border:0;color:#200813}
-.thermo .t1{background:#f3c6b1}.thermo .t2{background:#f7a98e}.thermo .t3{background:#ff8a7a}.thermo .t4{background:#ff5b7a}.thermo .t5{background:#e8204f;color:#fff}
-.h1{color:#f7a98e}.h2{color:#f7a98e}.h3{color:#ff8a7a}.h4{color:#ff5b7a}.h5{color:#ff3d6b}
 .reacts{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .reacts button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:14px;font-size:11px;font-weight:600;color:var(--muted)}
 .reacts button b{font-size:24px;line-height:1}
 .rxchip{align-self:flex-start;border-radius:999px;padding:8px 14px;background:#ff5b7a26;border-color:#ff5b7a66;font-size:15px}.rxchip .note{font-size:12px}
-.rxgot{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;background:linear-gradient(90deg,#ff5b7a2e,#ff5b7a0a);border:1px solid #ff5b7a55;animation:glowin 1.2s ease}
-.rxgot>b{font-size:34px;line-height:1}.rxgot i{color:var(--rose);font-style:normal;font-weight:700}
-@keyframes glowin{0%{box-shadow:0 0 0 0 #ff5b7a99}100%{box-shadow:0 0 0 14px #ff5b7a00}}
-.heatscale{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.heatscale i{flex:1;height:3px;border-radius:2px;background:linear-gradient(90deg,#f3c6b1,#ff5b7a,#e8204f)}
 .tbar{flex:1;height:10px;border-radius:5px;background:var(--line);overflow:hidden}.tbar i{display:block;height:100%;background:linear-gradient(90deg,#f3c6b1,#ff5b7a,#e8204f)}
-.heatsum{gap:12px}
 .talk{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px}
-.spark{display:flex;flex-direction:column;gap:10px}
-.spark blockquote{margin:0;padding:12px 14px;border-radius:16px;background:#ffffff0d;font-family:var(--display);font-style:italic;font-size:calc(18px*var(--ts));line-height:1.4;position:relative}
-.spark cite{display:block;font-family:var(--body);font-style:normal;font-size:12px;color:var(--muted);margin-top:6px}.spark cite::before{content:"— "}
-.spark p{margin:0;font-weight:600;color:var(--ember)}
-.starters{display:flex;flex-wrap:wrap;gap:8px}.starters button{padding:9px 14px;font-size:14px;font-weight:600;background:#ff5b7a1f;border-color:#ff5b7a66}
 .chat{display:flex;flex-direction:column;gap:6px}
 .bub{position:relative;max-width:82%;padding:9px 13px;border-radius:20px;font-size:calc(16px*var(--ts));line-height:1.4;overflow-wrap:anywhere}
 .bub.them{align-self:flex-start;background:#3a2234;border-bottom-left-radius:6px}
 .bub.me{align-self:flex-end;background:linear-gradient(135deg,#ff5b7a,#e8366a);color:#fff;border-bottom-right-radius:6px}
 .bub .quote{font-size:12.5px;opacity:.75;border:0;padding:0 0 4px;margin:0}
-.bub .bact{display:flex;gap:2px;position:absolute;top:50%;transform:translateY(-50%)}.bub.them .bact{left:100%;margin-left:4px}.bub.me .bact{right:100%;margin-right:4px}
-.bub .bact button{padding:4px 7px;border:0;background:transparent;color:var(--muted);font-size:15px;line-height:1}.bub .bact button.on{color:var(--rose)}
 .bub.typing{padding:12px 14px}
 .composer{display:flex;gap:8px;align-items:center;background:#ffffff0d;border:1px solid var(--line);border-radius:999px;padding:4px 4px 4px 14px}
 .composer input{flex:1;min-width:0;border:0;background:transparent;padding:8px 0}.composer input:focus{outline:none}
 .composer button{flex:none;width:38px;height:38px;padding:0;border-radius:50%;border:0;background:linear-gradient(135deg,#ff5b7a,#ffb08a);color:#200813;font-size:16px}
 .quote{font-size:13px;color:var(--muted);border-left:3px solid var(--rose);padding-left:8px;margin-bottom:4px}
-.msgact{display:flex;gap:6px;margin-top:6px}.msgact button{padding:3px 10px;font-size:12px;background:transparent;border-color:#ffffff22;color:var(--muted)}.msgact button.on{color:var(--rose)}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}.chips button{flex:none;padding:7px 12px;font-size:13px;font-weight:500}
 .replying{display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);background:#ff5b7a14;padding:6px 10px;border-radius:10px}
 .replying span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.replying button{padding:2px 10px}
@@ -153,16 +131,9 @@ details summary{cursor:pointer}
 .fx.fx-shy{background:radial-gradient(circle at 50% 50%,#ff9ab066,#ff9ab022 45%,transparent 75%);animation:fxfade 3.9s ease forwards}
 .fx.fx-sweet{background:#ff2d5533;animation:fxfade 3.9s ease forwards}
 @keyframes fxfade{0%{opacity:0}15%{opacity:1}75%{opacity:1}100%{opacity:0}}
-@keyframes flick{0%,20%,40%{opacity:1}10%,30%{opacity:.3}60%{opacity:.8}100%{opacity:0}}
-@keyframes beat{0%,100%{opacity:0}15%{opacity:1}30%{opacity:.2}45%{opacity:.9}70%{opacity:.1}}
 .fx .pt{position:absolute;bottom:-40px;font-style:normal;z-index:1;animation:rise 3.6s ease-out forwards}
 @keyframes rise{0%{transform:translate(0,0);opacity:0}15%{opacity:.95}80%{opacity:.8}100%{transform:translate(var(--dx,0),-100vh);opacity:0}}
-@keyframes fall{0%{transform:translateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(110vh);opacity:.2}}
-@keyframes stamp{0%{transform:translateX(-50%) scale(2.2);opacity:0}20%{transform:translateX(-50%) scale(1);opacity:.9}80%{opacity:.9}100%{opacity:0}}
-.wrap.shake{animation:shake .5s ease}
-@keyframes shake{0%,100%{transform:none}20%{transform:translate(-6px,2px) rotate(-.6deg)}40%{transform:translate(6px,-2px) rotate(.6deg)}60%{transform:translate(-4px,1px)}80%{transform:translate(3px,-1px)}}
-.wrap.shy{animation:shy 1.2s ease}@keyframes shy{0%,100%{transform:none}30%,70%{transform:scale(.96)}}
-@media (prefers-reduced-motion:reduce){.fx,.fxphrase,.wrap.shake,.wrap.shy{animation-duration:.01s!important}.fxphrase{animation:fxfade 2.5s linear forwards!important}}
+@media (prefers-reduced-motion:reduce){.fx,.fxphrase{animation-duration:.01s!important}.fxphrase{animation:fxfade 2.5s linear forwards!important}}
 .result{font-weight:700;font-size:17px;text-align:center}
 .result.hit{color:var(--ok)}.result.miss{color:var(--ember)}
 .wait{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
@@ -171,10 +142,6 @@ details summary{cursor:pointer}
 @keyframes b{0%,60%,100%{opacity:.25}30%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.dots i{animation:none;opacity:.7}}
 .stack{display:flex;flex-direction:column;gap:8px}
-.foot{display:flex;gap:10px;margin-top:22px;padding-top:14px;border-top:1px solid var(--line)}.foot button{flex:1}
-.oldbar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:linear-gradient(transparent,var(--bg) 35%);padding:22px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.bar .in{max-width:560px;margin:0 auto;display:flex;gap:8px}
-.bar button{flex:1}
 .big{font-family:var(--display);font-weight:700;font-size:28px;margin:0;line-height:1.1;text-wrap:balance}
 .handoff{text-align:center;align-items:center;padding-block:40px}
 .scene{margin:-22px -20px 0;height:clamp(180px,52vw,250px);border-radius:24px 24px 0 0;overflow:hidden;position:relative;transition:opacity .4s ease,filter .4s ease;background:#050203}
@@ -270,9 +237,6 @@ body[data-lv="4"]{--glowc:#6a0f20;--vig:.6} body[data-lv="5"]{--glowc:#7a0b1a;--
 .sheet .grab{align-self:center;width:40px;height:4px;border-radius:2px;background:#ffffff33}
 .shh{font-family:var(--display);font-weight:700;font-size:20px;margin-top:4px}
 .mi{text-align:left;border-radius:14px;padding:13px 14px;background:#ffffff08}
-.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-.dgrid button{display:flex;gap:10px;align-items:center;text-align:left;border-radius:14px;padding:10px 12px;background:#ff5b7a14;border-color:#ff5b7a55}
-.dgrid button b{font-size:24px;line-height:1}
 .alist{display:flex;flex-wrap:wrap;gap:8px}.alist button{font-size:14px;font-weight:500;padding:8px 12px;background:#ffffff0b}
 .mylist{display:flex;flex-direction:column;gap:6px}.mylist div{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 6px 8px 12px;border-radius:12px;background:#ffffff08}
 .mylist span{min-width:0;overflow-wrap:anywhere}.mylist button{flex:none;padding:4px 10px;background:transparent;border:0;color:var(--muted)}
@@ -403,7 +367,6 @@ const SCF=`<filter id="b1" x="-20%" y="-20%" width="140%" height="140%"><feGauss
 <filter id="gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0"/></filter>
 ${rg("vg",.5,.48,.75,[[.45,"#000",0],[1,"#000",.88]])}`;
 function sceneSvg(id,cls){ const s=SC[id]; if(!s) return ""; return `<div class="${cls||"scene"}" aria-hidden="true"><svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMid slice"><defs>${SCF}</defs>${s.s}<rect width="360" height="200" filter="url(#gr)" opacity=".16" style="mix-blend-mode:overlay"/><rect width="360" height="200" fill="url(#vg)"/></svg></div>`; }
-const rim=(d,tr,c,w,a)=>`<path d="${d}" transform="${tr}" fill="none" stroke="${c}" stroke-width="${w}" opacity="${a}" filter="url(#b2)"/>`;
 const SKIN_LIT=lg("skl",0,0,0,1,[[0,"#a8683f"],[.22,"#4e2c1e"],[1,"#110705"]]);
 const SC={
 hallway:{l:1,s:`<rect width="360" height="200" fill="#070406"/>
@@ -473,7 +436,6 @@ tie:{l:2,s:`<rect width="360" height="200" fill="#050304"/><defs>${SKIN_LIT}${lg
  <g transform="translate(118 92) rotate(10)"><path d="M-18-10C-6-16 10-14 18-6C22 2 20 12 12 16C2 20-10 18-18 12Z" fill="url(#skl)"/>
   <path d="M-16-4C-4-8 8-6 16 0M-16 4C-4 0 8 2 16 8" stroke="#1a0c08" stroke-width="1.2" opacity=".6" fill="none"/><path d="M14-6C30-4 46 4 60 16L50 30C40 20 26 14 12 12Z" fill="#1c100c"/></g>`}
 };
-const BODY="M-70 98C-60 140-56 180-56 230H52C50 180 56 140 64 98Z";
 Object.assign(SC,{
 againstdoor:{l:3,s:`<rect width="360" height="200" fill="#03050a"/><defs>${lg("mb",0,0,1,1,[[0,"#bcd4ff",.32],[1,"#9ab8ff",0]])}${lg("dr",0,0,1,0,[[0,"#121826"],[1,"#070910"]])}</defs>
  <rect x="22" y="8" width="46" height="34" fill="#a8c4f0" opacity=".75" filter="url(#b1)"/><path d="M45 8V42M22 25H68" stroke="#03050a" stroke-width="2"/>
@@ -538,7 +500,6 @@ car:{l:4,s:`<rect width="360" height="200" fill="#04060a"/><defs>${lg("lc",0,0,0
 const lit=(id,parts,tr,cx,cy,r,c,a)=>`<defs><clipPath id="${id}">${parts.map(d=>`<path d="${d}" transform="${tr}"/>`).join("")}</clipPath>${rg(id+"g",cx,cy,r,[[0,c,a],[.5,c,a*.45],[1,c,0]],1)}</defs><rect width="360" height="200" fill="url(#${id}g)" clip-path="url(#${id})"/>`;
 const sil=(parts,tr,f)=>`<g transform="${tr}" fill="${f||"#060304"}">${parts.map(d=>`<path d="${d}"/>`).join("")}</g>`;
 const FOOT="M0 0C-13 0-17-22-15-42C-13-58-5-64 3-62C13-60 16-46 14-32C12-16 12 0 0 0ZM-12-60A4.2 4.2 0 1 0-12-60.1ZM-5-66A3.6 3.6 0 1 0-5-66.1ZM2-66A3.2 3.2 0 1 0 2-66.1ZM8-63A2.8 2.8 0 1 0 8-63.1ZM12-58A2.4 2.4 0 1 0 12-58.1Z";
-const CALF="M70-9C46-11 22-9 6-6C0-10-8-12-16-10C-26-8-36-4-40 0C-42 3-38 5-34 4L-12 4C-4 6 2 6 8 6C26 8 48 11 70 11Z";
 Object.assign(SC,{
 blindfold:{l:5,s:`<rect width="360" height="200" fill="#050203"/>${pool("bp",300,190,150,90,"#ff9a48",.3)}
  <ellipse cx="120" cy="168" rx="120" ry="30" fill="#2a1a1c" filter="url(#b4)"/>
@@ -830,7 +791,7 @@ function pause(){ if(!G||G.ph==="pause")return; const k="p"+G.v; commit({ph:"pau
 function coolDown(){ const l=Math.max(1,G.lvl-1); const g=Object.assign({},G,{lvl:l,n:0,ht:[0,0]}); commit(draw(g,{note:`Cooled down to ${LVN(l)}.`})); }
 
 /* ---------- rendering ---------- */
-function sig(){ const strip={}; for(const id in P){const p=P[id];strip[id]={me:p.me,a:p.a,vt:p.vt,rx:p.rx,rt:p.rt,cm:p.cm,hv:p.hv,rd:p.rd,ty:id===myId?null:p.ty};}
+function sig(){ const strip={}; for(const id in P){const p=P[id];strip[id]={me:p.me,a:p.a,vt:p.vt,rx:p.rx,cm:p.cm,rd:p.rd,ty:id===myId?null:p.ty};}
   return JSON.stringify([mode,joined,G,strip,holder,flash,form.code,emojiErr,invite,copied,rxOpen,replyTo]); }
 function render(){
   const s=sig(); if(s===lastSig){ tick(); return; } lastSig=s;
@@ -1015,16 +976,10 @@ function react(id,tg,e){ const cur=Object.assign({},rxOf(id));
   if(tg!=="R"&&cur[tg]&&cur[tg][0]===e) delete cur[tg]; else cur[tg]=[e,Date.now()];
   const ks=Object.keys(cur); if(ks.length>24) delete cur[ks.filter(k=>k!=="R").sort((a,b)=>cur[a][1]-cur[b][1])[0]];
   setFor(id,{rx:{k:G.k,m:cur}}); }
-function ansRef(){
-  const c=card(G.c), own=G.pl[G.ow].id, oth=other(own);
-  let id=G.md==="both"||G.ph==="fin"?(mode==="net"?other(myId):oth):G.md==="guess"?own:(c.w==="b"&&G.md==="solo"?oth:own);
-  if(G.md==="reply") id=c.w==="b"?oth:own;
-  const t=ansText(id); return t?{id,t}:null;
-}
 function ansText(id){ const c=card(G.c), a=A(id); if(!a)return "";
   if(a.f) return a.f; if(a.x) return a.x; if(a.t&&a.t.length) return a.t[a.t.length-1];
   const o=c.t==="q"?c.o:c.t==="f"?c.o.map(x=>x[0]):null; return o&&a.o!=null?strip(tok(o[a.o],G.ow)):""; }
-function quoteOf(r){ if(r==="ans"){ const a=ansRef(); return a?a.t:""; } if(r.startsWith("a:")) return ansText(r.slice(2)); const m=thread().find(x=>x.a+":"+x.i===r); return m?m.t:""; }
+function quoteOf(r){ if(r.startsWith("a:")) return ansText(r.slice(2)); const m=thread().find(x=>x.a+":"+x.i===r); return m?m.t:""; }
 /* The answer to a "Tell me" question: a reply to it if there is one, else their next message. */
 function tellAns(m){ const th=thread(), ern=other(m.a), id=m.a+":"+m.i;
   return th.find(x=>x.a===ern&&x.r===id&&!x.tg) || th.slice(th.indexOf(m)+1).find(x=>x.a===ern&&!x.tg&&!x.r) || th.slice(th.indexOf(m)+1).find(x=>x.a===ern&&!x.tg) || null; }
@@ -1195,13 +1150,8 @@ function bind(){
     if(!okCode(cd)){flash="Type the room word your partner sent you.";lastSig="";return render();} joinRoom(cd); });
   on("#create",()=>{ rd(); if(!form.n){flash="Add your name first.";lastSig="";return render();} if(!form.b){flash="Choose Girl or Boy.";lastSig="";return render();} joinRoom(newCode()); });
   on("#joininv",()=>{ rd(); joinRoom(invite); });
-  on("#notinv",()=>{ invite=""; setHash(""); try{history.replaceState(null,"",location.pathname+location.search)}catch(e){} flash=""; lastSig=""; render(); });
   on("#copylink",()=>copyText(inviteURL(),"link"));
   on("#sharelink",()=>{ const url=inviteURL(); if(navigator.share){ navigator.share({title:"After Dark",text:"Join me 😏",url}).catch(()=>{}); } else copyText(url,"link"); });
-  on("#copymsg",()=>copyText(`Come play After Dark with me 😏 Open the game link and join room: ${code}`,"msg"));
-  on("#tolocal",()=>{mode="local";flash="";G=null;lastSig="";render();});
-  on("#tonet",()=>{mode="net";flash="";G=null;lastSig="";render();});
-  on("#leave",async()=>{ try{await nr.leave()}catch(e){} nr=null;joined=false;G=null;invite="";for(const k in P)delete P[k];mine={};lastSig="";render(); });
   on("#nstart",()=>{ const ids=Object.keys(P).filter(id=>P[id]&&P[id].me).sort().slice(0,2); if(!ids.includes(myId)){ids[1]=myId;ids.sort();}
     const pls=ids.map(id=>({id,n:P[id].me.n,b:P[id].me.b})); const cap=Math.min(...ids.map(id=>+P[id].me.cap||5));
     startGame(pls,cap); });
@@ -1220,9 +1170,9 @@ function bind(){
   document.querySelectorAll("#app [data-rx]").forEach(b=>b.onclick=()=>{ rxOpen=false; react(b.dataset.who,"R",b.dataset.rx); });
   on("#rxchange",()=>{ rxOpen=true; lastSig=""; render(); });
   on("#cmtx",()=>{ replyTo=null; lastSig=""; render(); });
-  const sendCmt=(preset,refId,dare,tg)=>{ const i=$("#cmt"); const t=(typeof preset==="string"?preset:(i&&i.value||"")).trim(); if(!t)return;
+  const sendCmt=(preset,tg)=>{ const i=$("#cmt"); const t=(typeof preset==="string"?preset:(i&&i.value||"")).trim(); if(!t)return;
     const cur=(P[myId]&&P[myId].cm&&P[myId].cm.k===G.k?P[myId].cm.m:[])||[];
-    const m={i:cur.length?cur[cur.length-1].i+1:0,t:t.slice(0,200),s:Date.now()}; if(tg)m.tg=tg; if(refId)m.r=refId; else if(replyTo&&!tg)m.r=replyTo;
+    const m={i:cur.length?cur[cur.length-1].i+1:0,t:t.slice(0,200),s:Date.now()}; if(tg)m.tg=tg; else if(replyTo)m.r=replyTo;
     if(typeof preset!=="string"){ cmtDraft=""; if(i)i.value=""; } replyTo=null; mine.ty=null;
     setMine({cm:{k:G.k,m:cur.concat([m]).slice(-10)},ty:null,rd:null}); };
   on("#cmtsend",()=>sendCmt());
@@ -1268,7 +1218,7 @@ function renderSheet(){
   on("#m-pause",()=>{ close(); pause(); });
   on("#m-mine",()=>{ sheet="mine"; renderSheet(); }); on("#m-unk",()=>{ sheet="unk"; renderSheet(); });
   on("#tsm2",()=>setTs(-0.1)); on("#tsp2",()=>setTs(0.1));
-  el.querySelectorAll("[data-tell]").forEach(b=>b.onclick=()=>{ const t=TELL.find(x=>x[0]===b.dataset.tell); close(); if(t&&sendC) sendC(fillT(gsel(t[1],gOf(myId))),null,null,t[0]); });
+  el.querySelectorAll("[data-tell]").forEach(b=>b.onclick=()=>{ const t=TELL.find(x=>x[0]===b.dataset.tell); close(); if(t&&sendC) sendC(fillT(gsel(t[1],gOf(myId))),t[0]); });
   el.querySelectorAll("[data-mydel]").forEach(b=>b.onclick=()=>{ const a=myReplies(); a.splice(+b.dataset.mydel,1); setMyReplies(a); lastSig=""; render(); renderSheet(); });
   const add=()=>{ const i=el.querySelector("#myin"), t=(i&&i.value||"").trim(); if(!t)return; const a=myReplies(); if(!a.includes(t))a.unshift(t); setMyReplies(a); lastSig=""; render(); renderSheet(); const n=$("#myin"); if(n)n.focus(); };
   on("#myadd",add); const mi=el.querySelector("#myin"); if(mi) mi.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); add(); } };

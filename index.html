@@ -142,24 +142,22 @@ details summary{cursor:pointer}
 .fx{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
 .fxphrase{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);width:min(86vw,440px);text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;
   font-family:var(--display);font-weight:700;font-size:25px;line-height:1.3;color:#fff;background:transparent;border:0!important;box-shadow:none!important;border:1px solid #ff5b7a66;border-radius:22px;padding:18px 20px 20px;box-shadow:0 20px 60px -10px #000;animation:fxin 3.9s ease forwards}
-.fxphrase b{font-size:96px;line-height:1;display:block;animation:pop .7s cubic-bezier(.2,1.6,.4,1) both}.fxphrase b.shake{animation:pop .7s cubic-bezier(.2,1.6,.4,1) both,shake .6s ease .7s 2}.fxphrase b.shy{animation:pop .7s ease both,shy 1.2s ease .7s}
+.fxphrase b{font-size:96px;line-height:1;display:block;animation:pop .8s ease both}
 .fxphrase small{font-family:var(--body);font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--ember);margin-top:4px}
-@keyframes pop{0%{transform:scale(.2);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 .fx:not(:empty)::before{content:"";position:absolute;inset:0;background:#0b0408d9;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:fxfade 3.9s ease forwards}
 @keyframes fxin{0%{opacity:0;transform:translate(-50%,-40%) scale(.85)}15%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-56%)}}
 .fx.fx-hot{background:linear-gradient(0deg,#ff5a1fcc,#ff2d5566 35%,transparent 75%);animation:fxfade 3.9s ease forwards}
-.fx.fx-naughty{background:#5a1a8a55;animation:flick 3.9s steps(1) forwards}
+.fx.fx-naughty{background:#5a1a8a55;animation:fxfade 3.9s ease forwards}
 .fx.fx-wet{background:linear-gradient(180deg,#5ab4ff33,#1e3a8a44);animation:fxfade 3.9s ease forwards}
 .fx.fx-want{background:radial-gradient(circle at 50% 45%,#ff5b7a55,transparent 60%);animation:fxfade 3.9s ease forwards}
 .fx.fx-shy{background:radial-gradient(circle at 50% 50%,#ff9ab066,#ff9ab022 45%,transparent 75%);animation:fxfade 3.9s ease forwards}
-.fx.fx-sweet{background:#ff2d5533;animation:beat 1.3s ease 3}
+.fx.fx-sweet{background:#ff2d5533;animation:fxfade 3.9s ease forwards}
 @keyframes fxfade{0%{opacity:0}15%{opacity:1}75%{opacity:1}100%{opacity:0}}
 @keyframes flick{0%,20%,40%{opacity:1}10%,30%{opacity:.3}60%{opacity:.8}100%{opacity:0}}
 @keyframes beat{0%,100%{opacity:0}15%{opacity:1}30%{opacity:.2}45%{opacity:.9}70%{opacity:.1}}
-.fx .pt{position:absolute;bottom:-40px;font-style:normal;animation:rise 3.4s ease-in forwards}
-.fx.fx-wet .pt{top:-30px;bottom:auto;width:3px;height:26px;border-radius:3px;background:linear-gradient(#bfe3ff00,#bfe3ff);animation:fall 2.2s linear infinite}
-.fx.fx-want .pt{left:50%!important;bottom:auto;top:30%;font-size:140px!important;transform:translateX(-50%);animation:stamp 3.6s ease forwards}
-@keyframes rise{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-105vh) rotate(20deg);opacity:0}}
+.fx .pt{position:absolute;bottom:-40px;font-style:normal;z-index:1;animation:rise 3.6s ease-out forwards}
+@keyframes rise{0%{transform:translate(0,0);opacity:0}15%{opacity:.95}80%{opacity:.8}100%{transform:translate(var(--dx,0),-100vh);opacity:0}}
 @keyframes fall{0%{transform:translateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(110vh);opacity:.2}}
 @keyframes stamp{0%{transform:translateX(-50%) scale(2.2);opacity:0}20%{transform:translateX(-50%) scale(1);opacity:.9}80%{opacity:.9}100%{opacity:0}}
 .wrap.shake{animation:shake .5s ease}
@@ -298,6 +296,9 @@ const PH={
 "❤️":{pick:["{R} melted a little.","Sweet pick, {O}. {R} felt it."],
       words:["{R} just fell for {O} a little more.","That was sweet. {R} is smiling at the screen."],
       hit:["{R} knows {O}'s heart."],miss:["Missed the guess, but {R} loves the answer."]}};
+const RXE={"😳":["😳","💗","🙈"],"❤️":["❤️","💕","💞"],"🫦":["🫦","💋","👅"],"😈":["😈","🖤","⛓️"],"💦":["💦","💧","🌊"],"🔥":["🔥","✨","🥵"]};
+const SCE={hallway:["🚪","🗝️"],balcony:["🌃","🌙"],candle:["🕯️","🍷"],doorway:["🚪","👗"],mirror:["🪞","👗"],tie:["👔","🛏️"],againstdoor:["🚪","🌙"],shower:["🚿","🫧"],windowbed:["🌃","🛏️"],
+ wallshadow:["🕯️","🛏️"],sheets:["🛏️","🌹"],car:["🚗","🌧️"],blindfold:["🎀","🕯️"],legs:["🦶","🛏️"],breath:["🌬️","❄️"],firstlight:["🌅","☕"],shirt:["👕","☕"],bath:["🛁","🕯️"]};
 const FXV={"🔥":[60,40,60],"😈":[30,60,30,60,30],"💦":[20,40,20,40,20,40],"🫦":[120],"😳":[40],"❤️":[90,120,90]};
 const PER=l=>l===0?4:PER_LEVEL, LVN=l=>l===0?"Warm-up":LV[l-1];
 const strip=x=>String(x).replace(/<[^>]+>/g,"").replace(/[“”"]/g,"").trim();
@@ -906,7 +907,7 @@ function feedback(c,own,oth){
   let h=`<div class="fb">`;
   if(theirs) h+=`<div class="rxgot"><b>${theirs.e}</b><span><b>${esc(nameOf(o))}</b> is <i>${esc(RXS[theirs.e]||"")}</i>${mine?"":". Your turn…"}</span></div>`;
   if(mine&&!rxOpen) h+=`<button class="rxchip" id="rxchange" aria-label="Change your reaction">${mine.e} ${mode==="local"?esc(nameOf(reactor))+" is":"You're"} ${esc((mode==="local"?RXS:RXY)[mine.e]||"")} <span class="note">· change</span></button>`;
-  else h+=`<span class="lbl">${mode==="local"?esc(nameOf(reactor))+", how":"How"} did that make you feel?</span>
+  else h+=`<span class="lbl">${mode==="local"?esc(nameOf(reactor))+", what":"What"} did that do to you?</span>
    <div class="reacts">${RX.map(([e,l])=>`<button data-rx="${e}" data-who="${reactor}" class="${mine&&mine.e===e?"pick":""}" aria-label="${l}"><b>${e}</b><span>${l}</span></button>`).join("")}</div>
    <div class="heatscale" aria-hidden="true"><span>sweet</span><i></i><span>filthy</span></div>`;
   return h+`</div>`;
@@ -950,7 +951,7 @@ function readyBar(){
   if(mode!=="net") return `<button class="primary" id="next">${last?"Close the night":"Next card"}</button>`;
   const rd=id=>P[id]&&P[id].rd&&P[id].rd.k===G.k, o=other(myId);
   if(rd(myId)) return `<div class="readyrow"><div class="wait">${rd(o)?"Both ready…":`<span class="dots"><i></i><i></i><i></i></span>Waiting for ${esc(nameOf(o))} to be ready`}</div><button class="ghost" id="unready">Keep talking</button></div>`;
-  return `<div class="readyrow">${rd(o)?`<p class="note"><b>${esc(nameOf(o))}</b> is ready for the next card.</p>`:""}<button class="primary" id="ready">${last?"Ready to close the night":"Ready for next card"}</button></div>`;
+  return `<div class="readyrow">${rd(o)?`<p class="note"><b>${esc(nameOf(o))}</b> is ready for the next card.</p>`:""}<button class="primary" id="ready">${last?"Ready to close the night":"I want more"}</button></div>`;
 }
 function autoAdvance(){
   if(mode!=="net"||!G||(G.ph!=="card"&&G.ph!=="fin")||advancedK===G.k||!complete()) return;
@@ -970,10 +971,9 @@ function playFx(e,rid){
   const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
   const ph=document.createElement("div"); ph.className="fxphrase"; ph.innerHTML=`<b>${e}</b><span>${esc(fxPhrase(e,rid))}</span>${rid!==myId&&mode==="net"?`<small>React back below ↓</small>`:""}`; fx.appendChild(ph);
   if(!reduce){
-    const n={"🔥":18,"😈":10,"💦":24,"🫦":1,"😳":0,"❤️":12}[e]||8;
-    for(let i=0;i<n;i++){ const d=document.createElement("i"); d.className="pt"; d.textContent=e==="💦"?"":e;
-      d.style.left=(Math.random()*100)+"%"; d.style.animationDelay=(Math.random()*.6)+"s"; d.style.fontSize=(16+Math.random()*26)+"px"; fx.appendChild(d); }
-    const w=ph.querySelector("b"); if(w&&(e==="🔥"||e==="😈")) w.classList.add("shake"); if(w&&e==="😳") w.classList.add("shy");
+    const set=(RXE[e]||[e]).concat(SCE[G.sc]||[]), n=16;
+    for(let i=0;i<n;i++){ const d=document.createElement("i"); d.className="pt"; d.textContent=set[i%set.length];
+      d.style.left=(Math.random()*100)+"%"; d.style.animationDelay=(Math.random()*1.4)+"s"; d.style.fontSize=(18+Math.random()*22)+"px"; d.style.setProperty("--dx",(Math.random()*60-30)+"px"); fx.appendChild(d); }
   }
   try{ if(rid!==myId&&navigator.vibrate) navigator.vibrate(FXV[e]||40); }catch(_){}
   clearTimeout(playFx.t); playFx.t=setTimeout(()=>{ fx.className="fx"; fx.innerHTML=""; },4000);
@@ -997,11 +997,11 @@ function climaxView(nd){
 function checkView(nd){
   const atCap=G.lvl>=G.cap, me=actor()||myId;
   const myV=mode==="net"&&P[myId]&&P[myId].vt&&P[myId].vt.k===G.k?P[myId].vt.c:null;
-  const lab={up:"Hotter",stay:"Stay here",down:"Cooler",end:"End the night"};
-  let h=`<article class="card"><p class="big">${atCap?"You're at your limit":"Turn up the heat?"}</p>
-   ${heatSummary()}${atCap?"":cliff()}<p class="note">${atCap?"This is the hottest level you both chose.":`Next: <b>${LV[G.lvl]}</b>. Only if you both pick Hotter.`}</p>`;
+  const lab={up:"Make it filthier 🔥",stay:"Stay right here",down:"Slow down",end:"Take me to bed"};
+  let h=`<article class="card"><p class="big">${atCap?"You're at your limit":"Want it hotter?"}</p>
+   ${heatSummary()}${atCap?"":cliff()}<p class="note">${atCap?"This is the hottest level you both chose.":`Next: <b>${LV[G.lvl]}</b>. Only if you both say <i>Make it filthier</i>.`}</p>`;
   if(myV) h+=`<p class="note">You picked <b>${lab[myV]}</b>.</p>`+(nd.ids.length?waitLine(other(myId),"is choosing…"):"");
-  else h+=`<div class="stack">${atCap?"":`<button class="primary" data-v="up">Hotter</button>`}<button data-v="stay">Stay at ${LV[G.lvl-1]}</button>${G.lvl>1?`<button class="ghost" data-v="down">Cooler</button>`:""}<button class="ghost" data-v="end">End the night</button></div>`;
+  else h+=`<div class="stack">${atCap?"":`<button class="primary" data-v="up">${lab.up}</button>`}<button data-v="stay">${lab.stay}</button>${G.lvl>1?`<button class="ghost" data-v="down">${lab.down}</button>`:""}<button class="ghost" data-v="end">${lab.end}</button></div>`;
   return h+`</article>`;
 }
 function cliff(){

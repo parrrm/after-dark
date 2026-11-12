@@ -251,6 +251,32 @@ body[data-lv="4"]{--glowc:#6a0f20;--vig:.6} body[data-lv="5"]{--glowc:#7a0b1a;--
 .emok{display:flex;flex-wrap:wrap;gap:6px}
 .emok button{display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:12px;background:#ffffff0b;font-size:12px;font-weight:600;color:var(--muted)}
 .emok button b{font-size:20px;line-height:1}
+
+/* ---- floating chat ---- */
+body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.fx{z-index:58}
+#ad-fab{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:45;width:58px;height:58px;padding:0;border-radius:50%;
+  display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,var(--rose),#c2365a);border:0;box-shadow:0 10px 28px -6px #ff5b7a99,0 0 0 1px #ffffff1a inset}
+#ad-fab svg{width:26px;height:26px}
+#ad-fab .badge{position:absolute;top:-2px;right:-2px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#fff;color:#b8284f;font-size:12px;font-weight:800;line-height:22px;text-align:center}
+#ad-fab .tdot{position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#fff;animation:b 1.2s infinite}
+#ad-toast{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:46;max-width:min(300px,calc(100vw - 32px));
+  display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 14px;border-radius:18px 18px 6px 18px;background:var(--bg2);border:1px solid #ff5b7a55;box-shadow:0 12px 30px -10px #000;font-weight:400}
+#ad-toast b{font-size:12px;color:var(--rose)}#ad-toast span{font-size:14.5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#ad-toast.in{animation:tin .3s ease both}@keyframes tin{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+#ad-chat{position:fixed;inset:0;z-index:52;background:#0b0408cc;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.chpanel{position:absolute;inset:0;margin:0 auto;max-width:560px;display:flex;flex-direction:column;background:var(--bg);animation:shin .25s ease both;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.chhead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.chwho{display:flex;flex-direction:column}.chwho b{font-family:var(--display);font-size:20px}.chwho small{font-size:12px;color:var(--rose);min-height:15px}
+#chclose{width:38px;height:38px;padding:0;border-radius:50%;background:#ffffff0d;border:0;font-size:16px}
+.chlist{flex:1;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:12px;padding:14px 16px 18px}
+.chdiv{display:flex;align-items:center;gap:10px;margin:8px 0 2px;color:var(--muted);font-size:11.5px}
+.chdiv::before,.chdiv::after{content:"";flex:1;height:1px;background:var(--line)}
+.chdiv span{max-width:75%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chempty{margin:auto;max-width:28ch;text-align:center;color:var(--muted);font-size:14px}
+.chfoot{display:flex;flex-direction:column;gap:8px;padding:8px 12px 12px;border-top:1px solid var(--line);background:var(--bg2)}
+.chfoot .chips{max-height:84px;overflow-y:auto}
 </style>
 </head>
 <body>
@@ -261,6 +287,14 @@ body[data-lv="4"]{--glowc:#6a0f20;--vig:.6} body[data-lv="5"]{--glowc:#7a0b1a;--
 <div class="wrap" id="app"></div>
 <div class="fx" id="fx" aria-live="polite"></div>
 <div id="ad-rxp" hidden></div>
+<button id="ad-fab" type="button" aria-label="Chat" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C4 4.1 5.1 3 6.5 3h11C18.9 3 20 4.1 20 5.5v8c0 1.4-1.1 2.5-2.5 2.5H10l-4.2 3.4c-.5.4-1.3 0-1.3-.6V16C4.6 16 4 15 4 13.5z" fill="currentColor"/></svg><b class="badge" hidden></b><i class="tdot" hidden></i></button>
+<button id="ad-toast" type="button" hidden></button>
+<div id="ad-chat" hidden role="dialog" aria-label="Chat"><div class="chpanel">
+  <div class="chhead"><div class="chwho"><b id="chname"></b><small id="chstat"></small></div><button id="chclose" type="button" aria-label="Close chat">✕</button></div>
+  <div class="chlist" id="chlist"></div>
+  <div class="chfoot"><div id="chrep"></div><div class="chips" id="chchips"></div>
+    <div class="composer"><input id="cmt" maxlength="200" autocomplete="off" enterkeyhint="send"><button id="cmtsend" type="button" aria-label="Send">➤</button></div></div>
+</div></div>
 <div id="ad-sheet" hidden></div>
 
 
@@ -578,7 +612,7 @@ let room=null, nr=null, mode="init";      // mode: init | net | local
 let G=null;                                // shared game state
 const P={};                                // playerId -> {me,a,vt,rx,ty}
 let mine={};                               // my presence (net)
-let drafts={}, cmtDraft="", emojiErr=false, copied="", rxOpen=false, replyTo=null, fxSeen={}, fxReady=false, advancedK=null;
+let drafts={}, emojiErr=false, copied="", rxOpen=false, replyTo=null, fxSeen={}, fxReady=false, advancedK=null;
 const okCode=x=>/^[a-z0-9][a-z0-9-]{2,39}$/.test(x||"");
 let invite=(()=>{try{const h=decodeURIComponent(location.hash.slice(1)).toLowerCase();return okCode(h)?h:""}catch(e){return ""}})();
 function newCode(){const a=["velvet","midnight","silk","honey","scarlet","secret","golden","wild","slow","sweet"],n=["moon","kiss","rose","flame","night","pillow","cherry","tiger","storm","lace"];
@@ -697,7 +731,7 @@ function secretShare(g){
 function collectHearts(g){ if(!G||!G.k)return; const th=thread(); const bl=(g.bl||[]).slice();
   th.forEach(m=>{ if(hearted(m.a+":"+m.i)){ const t=m.t.slice(0,90); if(!bl.some(x=>x[1]===t)) bl.push([G.pl.findIndex(p=>p.id===m.a),t]); } }); g.bl=bl.slice(-8); }
 function startGame(players,cap){
-  const base={v:G?G.v:0,ph:"card",pl:players,cap,lvl:0,n:0,mem:[],ht:[0,0],tl:{m:0,c:0},tm:[],bl:[],hl:[],tx:[],nt:Math.random()<.5?0:1,u:{},pend:{}};
+  const base={v:G?G.v:0,ph:"card",gid:Math.random().toString(36).slice(2,9),pl:players,cap,lvl:0,n:0,mem:[],ht:[0,0],tl:{m:0,c:0},tm:[],bl:[],hl:[],tx:[],nt:Math.random()<.5?0:1,u:{},pend:{}};
   commit(draw(base));
 }
 function nextCard(skipped){
@@ -791,27 +825,25 @@ function pause(){ if(!G||G.ph==="pause")return; const k="p"+G.v; commit({ph:"pau
 function coolDown(){ const l=Math.max(1,G.lvl-1); const g=Object.assign({},G,{lvl:l,n:0,ht:[0,0]}); commit(draw(g,{note:`Cooled down to ${LVN(l)}.`})); }
 
 /* ---------- rendering ---------- */
-function sig(){ const strip={}; for(const id in P){const p=P[id];strip[id]={me:p.me,a:p.a,vt:p.vt,rx:p.rx,cm:p.cm,rd:p.rd,ty:id===myId?null:p.ty};}
+function sig(){ const strip={}; for(const id in P){const p=P[id];strip[id]={me:p.me,a:p.a,vt:p.vt,rx:p.rx,mx:p.mx,cm:p.cm,rd:p.rd,ty:id===myId?null:p.ty};}
   return JSON.stringify([mode,joined,G,strip,holder,flash,form.code,emojiErr,invite,copied,rxOpen,replyTo]); }
 function render(){
-  const s=sig(); if(s===lastSig){ tick(); return; } lastSig=s;
+  chMerge(); const s=sig(); if(s===lastSig){ tick(); return; } lastSig=s;
   const ta=$("#ans"), hadFocus=ta&&document.activeElement===ta; if(ta)draft=ta.value;
   let flip=false;
   { const want=G&&(G.ph==="card"||G.ph==="fin")&&G.sc&&SC[G.sc]?G.sc:G&&G.ph==="end"?"firstlight":G&&G.ph==="climax"?"sheets":"", bd=$("#bd");
     if(bd&&bd.dataset.sc!==want){ bd.dataset.sc=want; bd.innerHTML=want?sceneSvg(want,"bdsc"):""; } }
   document.body.dataset.lv=!G||G.ph==="lobby"?"0":(G.ph==="fin"||G.ph==="end")?"f":String(G.lvl||0);
-  if(G&&G.k!==lastK){ if(G.ph==="card"||G.ph==="fin") flipAt=Date.now(); if(lastK)drafts[lastK]=draft; lastK=G.k; sel=null; draft=drafts[G.k]||""; cmtDraft=""; replyTo=null; rxOpen=false; emojiErr=false; flip=true; rxp=null; if(sheet==="tell")sheet=null; if(mode==="local")holder=null; }
+  if(G&&G.k!==lastK){ if(G.ph==="card"||G.ph==="fin") flipAt=Date.now(); if(lastK)drafts[lastK]=draft; lastK=G.k; sel=null; draft=drafts[G.k]||""; if(replyTo&&replyTo.startsWith("a:")) replyTo=null; rxOpen=false; emojiErr=false; flip=true; rxp=null; if(sheet==="tell")sheet=null; if(mode==="local")holder=null; }
   const stg=G&&G.ph!=="lobby"?G.k+"|"+((G.ph==="card"||G.ph==="fin")?(complete()?"t":"a"):G.ph):"", stChange=!!(stg&&lastStg&&stg!==lastStg); lastStg=stg;
-  const cw=$("#cmt"), cwFocus=cw&&document.activeElement===cw; if(cw)cmtDraft=cw.value;
   const app=$("#app");
   if(mode==="init"){ app.innerHTML=`<p class="note">Loading…</p>`; return; }
   const sy=window.scrollY;
   if(!G||G.ph==="lobby") app.innerHTML=lobby(); else app.innerHTML=game();
   if(!flip&&!stChange) window.scrollTo(0,sy); else if(G&&G.ph!=="lobby") window.scrollTo(0,0);
   if(stChange){ const ap=$("#app"), bd=$("#bd"); ap.classList.remove("stagein"); bd.classList.remove("bdpulse"); void ap.offsetWidth; if(!flip) ap.classList.add("stagein"); bd.classList.add("bdpulse"); }
-  bind(); renderSheet(); renderRxp();
+  bind(); renderSheet(); renderRxp(); renderChat();
   { const el=Date.now()-flipAt, cd=$("#card"); if(cd&&el<1300&&(G.ph==="card"||G.ph==="fin")&&!cd.classList.contains("handoff")){ cd.style.setProperty("--fd",(-el)+"ms"); cd.classList.add("flip"); } }
-  const ncw=$("#cmt"); if(ncw){ ncw.value=cmtDraft; if(cwFocus){ncw.focus();ncw.setSelectionRange(ncw.value.length,ncw.value.length);} }
   checkFx(); autoAdvance();
   const nt=$("#ans"); if(nt){ nt.value=draft; if(hadFocus){nt.focus();nt.setSelectionRange(nt.value.length,nt.value.length);} }
   tick();
@@ -962,24 +994,36 @@ function feedback(c,own,oth){ // one-phone mode
    <div class="reacts">${rxSet(reactor).map(r=>`<button data-rx="${r.e}" data-who="${reactor}" class="${mine&&mine[0]===r.e?"pick":""}" aria-label="${esc(r.l)}"><b>${r.e}</b><span>${esc(r.l)}</span></button>`).join("")}</div>`;
   return h+`</div>`;
 }
-function thread(){
-  const all=[]; for(const p of G.pl){ const x=P[p.id]&&P[p.id].cm; if(x&&x.k===G.k)(x.m||[]).forEach(m=>all.push(Object.assign({a:p.id},m))); }
-  return all.sort((x,y)=>(x.s||0)-(y.s||0));
-}
+/* Chat is one conversation for the whole night. Each phone keeps everything it has seen (saved per game);
+   only the latest messages travel through the room. */
+let CH={}, CT={}, chSeen={}, chGid="";
+function chLoad(){ const gid=G&&G.gid||""; if(gid===chGid) return; chGid=gid; CH={}; CT={}; chSeen={};
+  try{ const x=JSON.parse(localStorage.getItem("ad-ch-"+gid)||"null"); if(x){ CH=x.m||{}; CT=x.c||{}; chSeen=x.s||{}; } }catch(e){} }
+let chSaveT=0;
+function chSave(){ clearTimeout(chSaveT); chSaveT=setTimeout(()=>{ try{ for(const k in localStorage) if(k.startsWith("ad-ch-")&&k!=="ad-ch-"+chGid) localStorage.removeItem(k);
+  localStorage.setItem("ad-ch-"+chGid,JSON.stringify({m:CH,c:CT,s:chSeen})); }catch(e){} },400); }
+function chMerge(){ if(!G||!G.pl) return; chLoad(); let ch=false;
+  for(const p of G.pl){ const x=P[p.id]&&P[p.id].cm; ((x&&x.m)||[]).forEach(m=>{ const id=p.id+":"+m.i; if(!CH[id]){ CH[id]=Object.assign({a:p.id},m); ch=true; } }); }
+  if(G.k&&(G.ph==="card"||G.ph==="fin")&&!CT[G.k]){ try{ CT[G.k]=strip(tok(card(G.c).x,G.ow)).slice(0,80); ch=true; }catch(e){} }
+  if(ch) chSave(); }
+function allChat(){ return Object.values(CH).sort((x,y)=>(x.s||0)-(y.s||0)); }
+function thread(){ return allChat().filter(m=>m.k===G.k); }
+function mxOf(id){ return (P[id]&&P[id].mx)||{}; }
 function rxOf(id){ const r=P[id]&&P[id].rx; return r&&G&&r.k===G.k&&r.m?r.m:{}; }
-function hearted(id){ return G.pl.some(p=>!!rxOf(p.id)[id]); }
+function hearted(id){ return G.pl.some(p=>!!mxOf(p.id)[id]); }
 function answerers(){ const c=card(G.c), own=G.pl[G.ow].id; if(c.t==="w")return []; if(G.md==="solo") return [c.w==="b"?other(own):own]; return [own,other(own)]; }
 function isCaller(id){ return !answerers().includes(other(id)); }
 function roundTarget(id){ return id===myId?isCaller(myId):(id===other(myId)&&answerers().includes(id)); }
 function roundState(){ const a=rxOf(myId).R, b=rxOf(other(myId)).R; return {me:a&&a[0],them:b&&b[0],ts:Math.max(a?a[1]:0,b?b[1]:0),done:!!(a&&b)}; }
-function react(id,tg,e){ const cur=Object.assign({},rxOf(id));
-  if(tg!=="R"&&cur[tg]&&cur[tg][0]===e) delete cur[tg]; else cur[tg]=[e,Date.now()];
-  const ks=Object.keys(cur); if(ks.length>24) delete cur[ks.filter(k=>k!=="R").sort((a,b)=>cur[a][1]-cur[b][1])[0]];
-  setFor(id,{rx:{k:G.k,m:cur}}); }
+function react(id,tg,e){
+  if(tg==="R"){ setFor(id,{rx:{k:G.k,m:{R:[e,Date.now()]}}}); return; }
+  const cur=Object.assign({},mxOf(id)); if(cur[tg]&&cur[tg][0]===e) delete cur[tg]; else cur[tg]=[e,Date.now()];
+  const ks=Object.keys(cur); if(ks.length>30) delete cur[ks.sort((a,b)=>cur[a][1]-cur[b][1])[0]];
+  setFor(id,{mx:cur}); }
 function ansText(id){ const c=card(G.c), a=A(id); if(!a)return "";
   if(a.f) return a.f; if(a.x) return a.x; if(a.t&&a.t.length) return a.t[a.t.length-1];
   const o=c.t==="q"?c.o:c.t==="f"?c.o.map(x=>x[0]):null; return o&&a.o!=null?strip(tok(o[a.o],G.ow)):""; }
-function quoteOf(r){ if(r.startsWith("a:")) return ansText(r.slice(2)); const m=thread().find(x=>x.a+":"+x.i===r); return m?m.t:""; }
+function quoteOf(r){ if(r.startsWith("a:")) return ansText(r.slice(2)); const m=CH[r]; return m?m.t:""; }
 /* The answer to a "Tell me" question: a reply to it if there is one, else their next message. */
 function tellAns(m){ const th=thread(), ern=other(m.a), id=m.a+":"+m.i;
   return th.find(x=>x.a===ern&&x.r===id&&!x.tg) || th.slice(th.indexOf(m)+1).find(x=>x.a===ern&&!x.tg&&!x.r) || th.slice(th.indexOf(m)+1).find(x=>x.a===ern&&!x.tg) || null; }
@@ -995,8 +1039,8 @@ function rxLine(){
   return `<div class="rxline"><b>👆</b><span>${call?`Hold your answer. Guess what it did to ${N}`:`Hold ${N}'s answer to react`}</span></div>`;
 }
 function msgBubble(m){
-  const id=m.a+":"+m.i, mine=m.a===myId, q=m.r&&quoteOf(m.r), o=other(myId);
-  const rx=G.pl.map(p=>rxOf(p.id)[id]).filter(Boolean).map(x=>x[0]);
+  const id=m.a+":"+m.i, mine=m.a===myId, q=m.q||(m.r&&quoteOf(m.r)), o=other(myId);
+  const rx=G.pl.map(p=>mxOf(p.id)[id]).filter(Boolean).map(x=>x[0]);
   let cls="bub gest "+(mine?"me":"them"), at=` data-rp="${id}"`, inner;
   if(m.tg){ const an=tellAns(m); cls+=" tell"+(an?" won":"");
     inner=`<span class="dk">💭 ${mine?"You asked":esc(nameOf(m.a))+" asks"}</span><span class="dt">${esc(m.t)}</span><span class="ds">${an?"Saved for later tonight 🔒":mine?`Waiting for ${esc(nameOf(o))}'s answer…`:"Swipe left to answer"}</span>`; }
@@ -1021,12 +1065,12 @@ function noteUnknown(key,t){ if(unkSeen.has(key))return; unkSeen.add(key);
 function myReplies(){ try{ const a=JSON.parse(localStorage.getItem("ad-my")||"[]"); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
 function setMyReplies(a){ try{ localStorage.setItem("ad-my",JSON.stringify(a.slice(0,40))); }catch(e){} }
 function chips(){
-  const o=other(myId), c=card(G.c), th=thread(), seed=hsh(G.k+"|"+th.length);
+  const o=other(myId), inCard=G.ph==="card"||G.ph==="fin", c=inCard?card(G.c):{}, th=inCard&&thread().length?thread():allChat().slice(-6), seed=hsh(G.k+"|"+Object.keys(CH).length);
   const out=[], seen=new Set(), add=(t,cls)=>{ if(!t||out.length>=5)return; t=fillT(t); const k=t.toLowerCase(); if(seen.has(k))return; seen.add(k); out.push([t,cls||""]); };
   const pick=(arr,n,off)=>{ const r=[]; if(!arr||!arr.length)return r; for(let i=0;i<arr.length&&r.length<n;i++) r.push(arr[(seed+(off||0)*7+i)%arr.length]); return r; };
   const real=th.filter(m=>!m.d&&!m.tg), lastO=[...real].reverse().find(m=>m.a===o), lastMe=[...real].reverse().find(m=>m.a===myId);
-  const oAns=answerers().includes(o)?A(o):null, oTxt=oAns?ansText(o):"", fresh=lastO&&(!lastMe||lastO.s>lastMe.s);
-  const their=Object.entries(rxOf(o)).filter(([k])=>k!=="R"&&th.some(m=>m.a===myId&&m.a+":"+m.i===k)).sort((x,y)=>y[1][1]-x[1][1])[0];
+  const oAns=inCard&&answerers().includes(o)?A(o):null, oTxt=oAns?ansText(o):"", fresh=lastO&&(!lastMe||lastO.s>lastMe.s);
+  const their=Object.entries(mxOf(o)).filter(([k])=>CH[k]&&CH[k].a===myId).sort((x,y)=>y[1][1]-x[1][1])[0];
   if(their&&(!lastO||their[1][1]>lastO.s)) pick(RXC[their[1][0]],1).forEach(t=>add(t,"rx"));
   const src=fresh?lastO.t:(!lastO&&oTxt?oTxt:"");
   if(src){ const hits=analyze(src);
@@ -1039,18 +1083,7 @@ function chips(){
   pick(FALL[band()][oAns?0:1],5,3).forEach(t=>add(t));
   return out;
 }
-function afterTalk(){
-  const th=thread(), o=other(myId);
-  let h=rxLine()+`<div class="talk"><div class="chat">`+th.map(msgBubble).join("");
-  if(P[o]&&P[o].ty==="c"+G.k) h+=`<div class="bub them typing"><span class="dots"><i></i><i></i><i></i></span></div>`;
-  h+=`</div>`;
-  const rq=replyTo&&quoteOf(replyTo);
-  if(rq) h+=`<div class="replying"><span>↪ ${esc(rq.slice(0,60))}</span><button id="cmtx" aria-label="Cancel reply">✕</button></div>`;
-  h+=`<div class="chips">${chips().map(([t,cl])=>`<button data-chip="${esc(t)}" class="${cl}">${cl==="mine"?"★ ":""}${esc(t)}</button>`).join("")}</div>`;
-  h+=`<div class="composer"><button class="dbtn" id="tell" aria-label="Tell me…">💭</button><input id="cmt" maxlength="200" placeholder="Message ${esc(nameOf(o))}…" autocomplete="off"><button id="cmtsend" aria-label="Send">➤</button></div>`;
-  if(!th.length) h+=`<p class="note hint">Swipe a message left to reply to it.</p>`;
-  return h+`</div>`;
-}
+function afterTalk(){ return rxLine(); }
 function readyBar(){
   const last=G.ph==="fin"&&G.c==="fin";
   if(mode!=="net") return `<button class="primary" id="next">${last?"Close the night":"Next card"}</button>`;
@@ -1090,7 +1123,7 @@ function checkFx(){
   if(mode!=="net"){ for(const p of G.pl){ const r=rxOf(p.id).R; if(!r)continue; const key="L|"+p.id+"|"+G.k+"|"+r[1]; if(fxSeen[key])continue; fxSeen[key]=1;
       if(fresh(r[1])) fxShow({big:r[0],title:`${nameOf(p.id)} is ${rxInfo(r[0],p.id).p3}`,scrim:true,dur:3600,cls:(RXA[r[0]]||[])[4],set:(RXE[r[0]]||[]).concat(SCE[G.sc]||[])}); } fxReady=true; return; }
   const o=other(myId), N=nameOf(o);
-  for(const p of G.pl){ const m=rxOf(p.id); for(const tg in m){ if(tg==="R")continue; const [e,ts]=m[tg], key="M|"+p.id+"|"+tg+"|"+ts; if(fxSeen[key])continue; fxSeen[key]=1; if(!fresh(ts))continue;
+  for(const p of G.pl){ const m=mxOf(p.id); for(const tg in m){ const [e,ts]=m[tg], key="M|"+p.id+"|"+tg+"|"+ts; if(fxSeen[key])continue; fxSeen[key]=1; if(!fresh(ts))continue;
       if(p.id!==myId) fxShow({big:e,title:`${N} is ${rxInfo(e,o).p3}`,set:RXE[e],dur:2600,vib:FXV[e]}); else fxShow({set:RXE[e],dur:2000}); } }
   const rs=roundState(), ro=rxOf(o).R;
   if(rs.done){ const key="R|"+G.k; if(!fxSeen[key]){ fxSeen[key]=1; if(fresh(rs.ts)) revealFx(rs); } }
@@ -1169,20 +1202,8 @@ function bind(){
   const ta=$("#ans"); if(ta){ ta.oninput=()=>{ draft=ta.value; if(mode==="net"){ const want=ta.value?G.k:null; if((mine.ty||null)!==want){ mine.ty=want; nr&&nr.presence({ty:want}).catch(()=>{}); } } }; }
   document.querySelectorAll("#app [data-rx]").forEach(b=>b.onclick=()=>{ rxOpen=false; react(b.dataset.who,"R",b.dataset.rx); });
   on("#rxchange",()=>{ rxOpen=true; lastSig=""; render(); });
-  on("#cmtx",()=>{ replyTo=null; lastSig=""; render(); });
-  const sendCmt=(preset,tg)=>{ const i=$("#cmt"); const t=(typeof preset==="string"?preset:(i&&i.value||"")).trim(); if(!t)return;
-    const cur=(P[myId]&&P[myId].cm&&P[myId].cm.k===G.k?P[myId].cm.m:[])||[];
-    const m={i:cur.length?cur[cur.length-1].i+1:0,t:t.slice(0,200),s:Date.now()}; if(tg)m.tg=tg; else if(replyTo)m.r=replyTo;
-    if(typeof preset!=="string"){ cmtDraft=""; if(i)i.value=""; } replyTo=null; mine.ty=null;
-    setMine({cm:{k:G.k,m:cur.concat([m]).slice(-10)},ty:null,rd:null}); };
-  on("#cmtsend",()=>sendCmt());
-  sendC=sendCmt;
-  document.querySelectorAll("#app [data-chip]").forEach(b=>b.onclick=()=>sendCmt(b.dataset.chip));
-  on("#tell",()=>{ const i=$("#cmt"); if(i)cmtDraft=i.value; sheet="tell"; renderSheet(); });
   on("#menu",()=>{ sheet="menu"; renderSheet(); });
   on("#newg2",()=>{ if(confirmNew){confirmNew=false;commit({ph:"lobby"});} else {confirmNew=true;$("#newg2").textContent="Tap again to restart";setTimeout(()=>{confirmNew=false;const e=$("#newg2");if(e)e.textContent="New game"},3000);} });
-  const ci=$("#cmt"); if(ci){ ci.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); sendCmt(); } };
-    ci.oninput=()=>{ cmtDraft=ci.value; if(mode==="net"){ const want=ci.value?"c"+G.k:null; if((mine.ty||null)!==want){ mine.ty=want; nr&&nr.presence({ty:want}).catch(()=>{}); } } }; }
   on("#ready",()=>setMine({rd:{k:G.k}}));
   on("#unready",()=>setMine({rd:null}));
   on("#wdgo",()=>windDown());
@@ -1192,13 +1213,60 @@ function bind(){
   on("#cool",()=>{ holder=null; coolDown(); }); on("#end",()=>finale());
   on("#again",()=>{ if(mode==="local"){G=null;lastSig="";render();} else commit({ph:"lobby"}); });
 }
-let sendC=null, sheet=null, rxp=null, gest=null;
+let sheet=null, rxp=null, gest=null, chOpen=false, chSig="", toastT=0;
+function sendMsg(text,tg){ const t=String(text||"").trim(); if(!t||!G) return; chMerge();
+  const mineM=Object.values(CH).filter(m=>m.a===myId), i=mineM.reduce((a,m)=>Math.max(a,m.i+1),0);
+  const m={i,t:t.slice(0,200),s:Date.now(),k:G.k}; if(tg) m.tg=tg; else if(replyTo){ m.r=replyTo; const q=quoteOf(replyTo); if(q) m.q=q.slice(0,70); }
+  replyTo=null; mine.ty=null; CH[myId+":"+i]=Object.assign({a:myId},m); chSeen[myId+":"+i]=1; chSave();
+  const cur=(P[myId]&&P[myId].cm&&P[myId].cm.m)||[]; setMine({cm:{m:cur.concat([m]).slice(-12)},ty:null}); }
+/* Floating chat: one button, one panel. */
+function chatOn(){ return mode==="net"&&G&&G.ph&&G.ph!=="lobby"&&G.pl&&G.pl.length===2; }
+function renderChat(force){
+  const fab=document.getElementById("ad-fab"), pan=document.getElementById("ad-chat"); if(!fab||!pan) return;
+  if(!chatOn()){ fab.hidden=true; pan.hidden=true; chOpen=false; return; }
+  const o=other(myId), N=nameOf(o), list=allChat(), typing=!!(P[o]&&P[o].ty==="c");
+  if(chOpen) list.forEach(m=>{ if(m.a!==myId) chSeen[m.a+":"+m.i]=1; });
+  const unread=list.filter(m=>m.a!==myId&&!chSeen[m.a+":"+m.i]);
+  fab.hidden=chOpen; const bd=fab.querySelector(".badge"); bd.hidden=!unread.length; bd.textContent=unread.length>9?"9+":unread.length; fab.querySelector(".tdot").hidden=!typing||!!unread.length;
+  // preview of a new message while the panel is closed
+  const nw=unread[unread.length-1];
+  if(!chOpen&&nw&&Date.now()-nw.s<15000&&renderChat.last!==nw.a+":"+nw.i){ renderChat.last=nw.a+":"+nw.i; const tt=document.getElementById("ad-toast");
+    tt.innerHTML=`<b>${esc(N)}</b><span>${esc(nw.tg?"💭 "+nw.t:nw.t)}</span>`; tt.hidden=false; tt.classList.remove("in"); void tt.offsetWidth; tt.classList.add("in"); clearTimeout(toastT); toastT=setTimeout(()=>{ tt.hidden=true; },3800); }
+  pan.hidden=!chOpen; if(!chOpen){ chSave(); return; }
+  chSave();
+  document.getElementById("chname").textContent=N; document.getElementById("chstat").textContent=typing?"typing…":"";
+  const inp=document.getElementById("cmt"); if(inp&&!inp.placeholder) inp.placeholder=`Message ${N}…`;
+  let h="", lastK=null;
+  list.forEach(m=>{ if(m.k!==lastK){ lastK=m.k; h+=`<div class="chdiv"><span>${esc(CT[m.k]||"Earlier")}</span></div>`; } h+=msgBubble(m); });
+  if(!list.length) h+=`<p class="chempty">Say something to ${esc(N)}. Swipe a message left to reply to it, hold it to react.</p>`;
+  if(typing) h+=`<div class="bub them typing"><span class="dots"><i></i><i></i><i></i></span></div>`;
+  const rq=replyTo&&quoteOf(replyTo);
+  const rep=rq?`<div class="replying"><span>↪ ${esc(rq.slice(0,60))}</span><button id="cmtx" type="button" aria-label="Cancel reply">✕</button></div>`:"";
+  let ch=""; try{ ch=chips().map(([t,cl])=>`<button type="button" data-chip="${esc(t)}" class="${cl}">${cl==="mine"?"★ ":""}${esc(t)}</button>`).join(""); }catch(e){}
+  const sg=h+"|"+rep+"|"+ch; if(sg===chSig&&!force) return; chSig=sg;
+  const el=document.getElementById("chlist"), near=force||el.scrollHeight-el.scrollTop-el.clientHeight<80;
+  el.innerHTML=h; document.getElementById("chrep").innerHTML=rep; document.getElementById("chchips").innerHTML=ch;
+  if(near) el.scrollTop=el.scrollHeight;
+  const cx=document.getElementById("cmtx"); if(cx) cx.onclick=()=>{ replyTo=null; renderChat(true); };
+  document.querySelectorAll("#chchips [data-chip]").forEach(b=>{ b.onpointerdown=e=>e.preventDefault(); b.onclick=()=>{ sendMsg(b.dataset.chip); renderChat(true); }; });
+}
+(function chatInit(){
+  const fab=document.getElementById("ad-fab"), inp=document.getElementById("cmt");
+  const open=()=>{ chOpen=true; document.getElementById("ad-toast").hidden=true; renderChat(true); };
+  fab.onclick=open; document.getElementById("ad-toast").onclick=open;
+  document.getElementById("chclose").onclick=()=>{ chOpen=false; replyTo=null; if(mine.ty==="c"){ mine.ty=null; nr&&nr.presence({ty:null}).catch(()=>{}); } renderChat(true); };
+  const send=()=>{ sendMsg(inp.value); inp.value=""; renderChat(true); };
+  document.getElementById("cmtsend").onpointerdown=e=>e.preventDefault();
+  document.getElementById("cmtsend").onclick=send;
+  inp.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); send(); } };
+  inp.oninput=()=>{ if(mode==="net"){ const want=inp.value?"c":null; if((mine.ty||null)!==want){ mine.ty=want; nr&&nr.presence({ty:want}).catch(()=>{}); } } };
+})();
 function sheetHTML(){
   if(!sheet||!G||G.ph==="lobby") return "";
   let h=`<div class="shbg" data-shx></div><div class="sheet" role="dialog" aria-label="${sheet==="tell"?"Tell me":"Menu"}"><i class="grab"></i>`;
   if(sheet==="menu"){ const canSkip=G.ph==="card"||G.ph==="fin"||G.ph==="climax";
     h+=`${canSkip?`<button class="mi" id="m-skip">⏭ Skip this card</button>`:""}<button class="mi" id="m-pause" ${G.ph==="pause"?"disabled":""}>⏸ Pause</button>
-     <button class="mi" id="m-mine">★ My quick replies</button><button class="mi" id="m-unk">✎ Words to teach the game</button>
+     ${G.ph==="card"||G.ph==="fin"?`<button class="mi" id="m-tell">💭 Tell me…</button>`:""}<button class="mi" id="m-mine">★ My quick replies</button><button class="mi" id="m-unk">✎ Words to teach the game</button>
      <div class="tsrow"><span class="lbl">Text size</span><button id="tsm2" aria-label="Smaller text">A–</button><button id="tsp2" aria-label="Bigger text">A+</button></div>`; }
   else if(sheet==="tell"){ const g=gOf(myId), used=thread().filter(m=>m.tg).map(m=>m.tg);
     h+=`<div class="shh">Tell me…</div><p class="note">Ask ${esc(nameOf(other(myId)))} something. Their answer comes back later tonight as a card made just for you two.</p><div class="alist">`+
@@ -1216,9 +1284,9 @@ function renderSheet(){
   el.querySelectorAll("[data-shx]").forEach(b=>b.onclick=close);
   on("#m-skip",()=>{ close(); holder=null; if(G.ph==="climax")windDown(); else nextCard(true); });
   on("#m-pause",()=>{ close(); pause(); });
-  on("#m-mine",()=>{ sheet="mine"; renderSheet(); }); on("#m-unk",()=>{ sheet="unk"; renderSheet(); });
+  on("#m-mine",()=>{ sheet="mine"; renderSheet(); }); on("#m-tell",()=>{ sheet="tell"; renderSheet(); }); on("#m-unk",()=>{ sheet="unk"; renderSheet(); });
   on("#tsm2",()=>setTs(-0.1)); on("#tsp2",()=>setTs(0.1));
-  el.querySelectorAll("[data-tell]").forEach(b=>b.onclick=()=>{ const t=TELL.find(x=>x[0]===b.dataset.tell); close(); if(t&&sendC) sendC(fillT(gsel(t[1],gOf(myId))),t[0]); });
+  el.querySelectorAll("[data-tell]").forEach(b=>b.onclick=()=>{ const t=TELL.find(x=>x[0]===b.dataset.tell); close(); if(t) sendMsg(fillT(gsel(t[1],gOf(myId))),t[0]); });
   el.querySelectorAll("[data-mydel]").forEach(b=>b.onclick=()=>{ const a=myReplies(); a.splice(+b.dataset.mydel,1); setMyReplies(a); lastSig=""; render(); renderSheet(); });
   const add=()=>{ const i=el.querySelector("#myin"), t=(i&&i.value||"").trim(); if(!t)return; const a=myReplies(); if(!a.includes(t))a.unshift(t); setMyReplies(a); lastSig=""; render(); renderSheet(); const n=$("#myin"); if(n)n.focus(); };
   on("#myadd",add); const mi=el.querySelector("#myin"); if(mi) mi.onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); add(); } };
@@ -1229,20 +1297,20 @@ function renderSheet(){
 function openRx(tg,x,y){ if(!G||mode!=="net")return; if(tg==="R"&&roundState().done)return; rxp={tg,x,y}; renderRxp(); try{navigator.vibrate&&navigator.vibrate(12)}catch(e){} }
 function renderRxp(){
   const el=document.getElementById("ad-rxp"); if(!el) return;
-  if(!rxp||!G||(G.ph!=="card"&&G.ph!=="fin")){ rxp=null; el.innerHTML=""; el.hidden=true; return; }
-  const set=rxSet(myId), call=rxp.tg==="R"&&isCaller(myId), cur=(rxOf(myId)[rxp.tg]||[])[0];
+  if(!rxp||!G||(rxp.tg==="R"&&G.ph!=="card"&&G.ph!=="fin")){ rxp=null; el.innerHTML=""; el.hidden=true; return; }
+  const set=rxSet(myId), call=rxp.tg==="R"&&isCaller(myId), cur=((rxp.tg==="R"?rxOf(myId):mxOf(myId))[rxp.tg]||[])[0];
   const title=rxp.tg==="R"?(call?`Guess: what did it do to ${esc(nameOf(other(myId)))}?`:"What did that do to you?"):"";
   const W=Math.min(innerWidth-24,380), left=Math.max(12,Math.min(innerWidth-W-12,rxp.x-W/2)); let top=rxp.y-(title?150:120); if(top<60) top=rxp.y+36;
   el.hidden=false; el.innerHTML=`<div class="rxbg" data-rxx></div><div class="rxpop" style="left:${left}px;top:${top}px;width:${W}px">${title?`<div class="rxt">${title}</div>`:""}<div class="rxrow">${set.map((r,i)=>`<button data-pe="${r.e}" class="${cur===r.e?"pick":""}" style="--i:${i}" aria-label="${esc(r.l)}"><b>${r.e}</b><span>${esc(r.l)}</span></button>`).join("")}</div></div>`;
 }
 function choose(e){ if(!rxp)return; const tg=rxp.tg; rxp=null; renderRxp(); react(myId,tg,e); }
-function startReply(rp){ const i=$("#cmt"); if(i)cmtDraft=i.value; replyTo=rp; lastSig=""; render(); const n=$("#cmt"); if(n)n.focus(); }
+function startReply(rp){ replyTo=rp; chOpen=true; renderChat(true); const n=$("#cmt"); if(n)n.focus(); }
 const gEl=g=>g.b.isConnected?g.b:document.querySelector(`.gest[data-rp="${CSS.escape(g.rp||"")}"]`);
 document.addEventListener("pointerdown",ev=>{
   const t=ev.target; if(!t.closest) return;
   if(t.closest("[data-pe]")) return;
   if(t.closest("[data-rxx]")){ rxp=null; renderRxp(); return; }
-  const b=t.closest("#app .gest"); if(!b||ev.button>0||mode!=="net") return;
+  const b=t.closest("#app .gest, #ad-chat .gest"); if(!b||ev.button>0||mode!=="net") return;
   const tg=b.dataset.tg;
   gest={b,tg,rp:b.dataset.rp,x:ev.clientX,y:ev.clientY,dx:0,sw:false,held:false,hov:null,
     t:tg?setTimeout(()=>{ if(gest&&!gest.sw){ gest.held=true; const el=gEl(gest); if(el)el.classList.add("pressed"); openRx(tg,gest.x,gest.y); } },380):0};
@@ -1260,7 +1328,7 @@ document.addEventListener("pointerup",()=>{ if(!gest) return; const g=gest; gest
   if(g.sw&&g.dx<-56) startReply(g.rp);
 });
 document.addEventListener("pointercancel",()=>{ if(!gest) return; clearTimeout(gest.t); const el=gEl(gest); if(el){ el.classList.remove("pressed","swready"); el.style.transform=""; } gest=null; });
-document.addEventListener("contextmenu",ev=>{ const b=ev.target.closest&&ev.target.closest("#app .gest"); if(!b) return; ev.preventDefault(); if(b.dataset.tg&&!rxp) openRx(b.dataset.tg,ev.clientX,ev.clientY); });
+document.addEventListener("contextmenu",ev=>{ const b=ev.target.closest&&ev.target.closest("#app .gest, #ad-chat .gest"); if(!b) return; ev.preventDefault(); if(b.dataset.tg&&!rxp) openRx(b.dataset.tg,ev.clientX,ev.clientY); });
 document.addEventListener("click",ev=>{ const p=ev.target.closest&&ev.target.closest("#ad-rxp [data-pe]"); if(p) choose(p.dataset.pe); });
 let lastK=null, flipAt=0, lastStg="";
 function setTs(d){ let v=+(getComputedStyle(document.documentElement).getPropertyValue("--ts")||1); v=Math.min(1.4,Math.max(0.85,Math.round((v+d)*100)/100));
